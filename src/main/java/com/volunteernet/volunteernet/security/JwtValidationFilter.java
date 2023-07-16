@@ -21,7 +21,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtValidationFilter extends BasicAuthenticationFilter{
-
     public JwtValidationFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
     }
@@ -47,9 +46,10 @@ public class JwtValidationFilter extends BasicAuthenticationFilter{
                 .getBody();
 
             String username = claims.getSubject();
+            String roles = (String) claims.get("roles");
 
             List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+            authorities.add(new SimpleGrantedAuthority(roles));
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);

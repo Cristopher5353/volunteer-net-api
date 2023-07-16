@@ -2,11 +2,13 @@ package com.volunteernet.volunteernet.security;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -49,7 +51,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             e.printStackTrace();
         }
 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,
+                password);
         return authenticationManager.authenticate(authenticationToken);
     }
 
@@ -57,17 +60,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
             Authentication authResult) throws IOException, ServletException {
 
-        String username = ((org.springframework.security.core.userdetails.User) authResult.getPrincipal())
+        String username = ((UserDetailService) authResult.getPrincipal())
                 .getUsername();
 
-        String token = Jwts.builder()
-                        .setSubject(username)
-                        .signWith(TokenConfig.SECRET_KEY)
-                        .setIssuedAt(new Date())
-                        .setExpiration(new Date(System.currentTimeMillis() + 36000000))
-                        .compact();
+        String roles = authResult.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
 
-        response.addHeader(TokenConfig.HEADER_AUTHORIZATION, TokenConfig.PREFIX_TOKEN + token);
+        String token = Jwts.builder()
+                .setSubject(username)
+                .claim("roles", roles)
+                .signWith(TokenConfig.SECRET_KEY)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 36000000))
+                .compact();
+
+        //response.addHeader(TokenConfig.HEADER_AUTHORIZATION, TokenConfig.PREFIX_TOKEN + token);
 
         CorrectResponse correctResponse = new CorrectResponse();
         correctResponse.setStatus(HttpStatus.OK.value());

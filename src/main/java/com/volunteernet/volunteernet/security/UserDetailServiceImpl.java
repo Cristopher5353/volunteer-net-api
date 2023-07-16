@@ -23,9 +23,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("Correo no existe en el sistema");
         }
 
-        User user = userByEmail.orElseThrow();
-
-        return new UserDetailService(user);
+        return new UserDetailService(userByEmail.get());
     }
 
 }
