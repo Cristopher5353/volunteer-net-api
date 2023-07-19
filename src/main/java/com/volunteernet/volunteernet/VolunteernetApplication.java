@@ -9,5 +9,4 @@ public class VolunteernetApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(VolunteernetApplication.class, args);
 	}
-
 }
