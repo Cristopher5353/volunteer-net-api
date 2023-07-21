@@ -37,7 +37,8 @@ public class SpringSecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authconfig -> {
-            authconfig.requestMatchers("/api/users").hasAuthority("GrupoVoluntario");
+            authconfig.requestMatchers("/api/chat/**").hasAnyAuthority("Voluntario", "GrupoVoluntario");
+            authconfig.requestMatchers("/api/users").permitAll();
             authconfig.anyRequest().authenticated();
         })
                 .addFilter(new JwtAuthenticationFilter(authenticationConfiguration.getAuthenticationManager()))

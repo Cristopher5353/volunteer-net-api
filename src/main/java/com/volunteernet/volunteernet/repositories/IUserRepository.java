@@ -6,4 +6,5 @@ import com.volunteernet.volunteernet.models.User;
 
 public interface IUserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByUsername(String username);
 }

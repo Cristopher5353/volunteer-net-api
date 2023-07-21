@@ -1,11 +1,14 @@
 package com.volunteernet.volunteernet.models;
 
+import java.util.Set;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
@@ -29,6 +32,10 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @ManyToMany
+    @JoinTable(name = "users_chats", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "chat_id"))
+    private Set<Chat> chats;
 
     public int getId() {
         return this.id;
@@ -68,5 +75,13 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Set<Chat> getChats() {
+        return this.chats;
+    }
+
+    public void setChats(Set<Chat> chats) {
+        this.chats = chats;
     }
 }

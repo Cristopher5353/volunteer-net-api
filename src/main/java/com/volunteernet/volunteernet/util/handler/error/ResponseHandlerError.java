@@ -10,7 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-
+import com.volunteernet.volunteernet.exceptions.ChatNotExistsInUserChatsException;
 import com.volunteernet.volunteernet.exceptions.EmailAlreadyExistsException;
 
 @ControllerAdvice
@@ -36,6 +36,18 @@ public class ResponseHandlerError {
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     protected ResponseEntity<Object> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex, WebRequest request) {
+            
+        ErrorResponse errorResponse = new ErrorResponse();
+
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setMessage(ex.getMessage());
+        errorResponse.setErrors(null);
+
+        return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ChatNotExistsInUserChatsException.class)
+    protected ResponseEntity<Object> handleChatNotExistsInUserChatsException(ChatNotExistsInUserChatsException ex, WebRequest request) {
             
         ErrorResponse errorResponse = new ErrorResponse();
 
