@@ -42,13 +42,15 @@ public class MessageServiceImpl implements IMessageService {
 
     @Override
     public void saveMessage(Integer chatId, SaveMessageDto saveMessageDto) {
-       verifyExistsChatInUserChats(chatId);
+        verifyExistsChatInUserChats(chatId);
 
-       User user = userRepository.findByUsername(getUserAutheticated()).get();
-       Chat chat = chatRepository.findById(chatId).get();
-       Message newMessage = new Message(saveMessageDto.getMessage(), user, chat);
-       
-       messageRepository.save(newMessage);
+        User user = userRepository.findByUsername(getUserAutheticated()).get();
+        Chat chat = chatRepository.findById(chatId).get();
+        Message newMessage = new Message(saveMessageDto.getMessage(), user, chat);
+
+        messageRepository.save(newMessage);
+
+        //generate wesocket
     }
 
     private String getUserAutheticated() {
@@ -59,7 +61,7 @@ public class MessageServiceImpl implements IMessageService {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
 
         boolean existsChatInUserChats = user.getChats().stream().anyMatch(chat -> chat.getId() == chatId);
-        
+
         if (!existsChatInUserChats) {
             throw new ChatNotExistsInUserChatsException();
         }

@@ -28,6 +28,9 @@ public class Message {
     @JoinColumn(name = "chat_id")
     private Chat chat;
 
+    public Message() {
+    }
+
     public Message(String message, User user, Chat chat) {
         this.message = message;
         this.user = user;
