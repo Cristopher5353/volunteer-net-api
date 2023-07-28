@@ -11,7 +11,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
 @Entity
 @Table(name = "users")
 public class User {
@@ -28,6 +27,15 @@ public class User {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "photo")
+    private String photo;
+
+    @Column(name = "website")
+    private String website;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
@@ -67,6 +75,30 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getPhoto() {
+        return this.photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
+
+    public String getWebsite() {
+        return this.website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
     public Role getRole() {

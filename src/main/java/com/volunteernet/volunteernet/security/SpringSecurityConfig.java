@@ -37,8 +37,8 @@ public class SpringSecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authconfig -> {
-            authconfig.requestMatchers("/api/chats/**").hasAnyAuthority("Voluntario", "GrupoVoluntario");
-            authconfig.requestMatchers("/api/users").permitAll();
+            authconfig.requestMatchers("/api/chats/**", "/api/users/chats").hasAnyAuthority("Voluntario", "GrupoVoluntario");
+            authconfig.requestMatchers("/api/users", "/notificaciones", "/ws/**").permitAll();
             authconfig.anyRequest().authenticated();
         })
                 .addFilter(new JwtAuthenticationFilter(authenticationConfiguration.getAuthenticationManager()))
@@ -56,7 +56,7 @@ public class SpringSecurityConfig {
         config.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-type"));
-        //config.setAllowCredentials(true);
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

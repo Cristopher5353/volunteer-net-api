@@ -75,8 +75,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .setExpiration(new Date(System.currentTimeMillis() + 36000000))
                 .compact();
 
-        //response.addHeader(TokenConfig.HEADER_AUTHORIZATION, TokenConfig.PREFIX_TOKEN + token);
-
         CorrectResponse correctResponse = new CorrectResponse();
         correctResponse.setStatus(HttpStatus.OK.value());
         correctResponse.setMessage("Inicio de sesión correcto");
@@ -93,7 +91,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-        errorResponse.setMessage("Usuario y/o contraseña incorrecto");
+        errorResponse.setMessage("Usuario y/o clave incorrecta");
         errorResponse.setErrors(null);
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));

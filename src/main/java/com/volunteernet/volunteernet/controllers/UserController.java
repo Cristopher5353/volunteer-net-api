@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.volunteernet.volunteernet.dto.user.UserSaveDto;
 import com.volunteernet.volunteernet.services.IServices.IUserService;
 import com.volunteernet.volunteernet.util.handler.ok.ResponseHandlerOk;
+import jakarta.validation.Valid;
 
 @RestController
 public class UserController {
@@ -17,7 +18,7 @@ public class UserController {
     private IUserService userService;
 
     @PostMapping("/api/users")
-    public ResponseEntity<Object> saveUser(@RequestBody UserSaveDto userSaveDto) {
+    public ResponseEntity<Object> saveUser(@Valid @RequestBody UserSaveDto userSaveDto) {
         userService.saveUser(userSaveDto);
         return ResponseHandlerOk.generateResponse("Usuario registrado correctamente", HttpStatus.CREATED, null);
     }
