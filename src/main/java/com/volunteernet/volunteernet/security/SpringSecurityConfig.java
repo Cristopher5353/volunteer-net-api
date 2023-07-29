@@ -37,7 +37,7 @@ public class SpringSecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authconfig -> {
-            authconfig.requestMatchers("/api/chats/**", "/api/users/chats").hasAnyAuthority("Voluntario", "GrupoVoluntario");
+            authconfig.requestMatchers("/api/chats/**", "/api/users/chats", "/api/publications").hasAnyAuthority("Voluntario", "GrupoVoluntario");
             authconfig.requestMatchers("/api/users", "/notificaciones", "/ws/**").permitAll();
             authconfig.anyRequest().authenticated();
         })

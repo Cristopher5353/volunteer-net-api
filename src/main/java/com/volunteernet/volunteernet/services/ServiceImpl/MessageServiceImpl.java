@@ -34,7 +34,8 @@ public class MessageServiceImpl implements IMessageService {
 
         Chat chat = chatRepository.findById(chatId).get();
 
-        return chat.getMessages().stream()
+        return chat.getMessages()
+                .stream()
                 .map(message -> new MessageResponseDto(message.getId(), message.getMessage(),
                         message.getUser().getUsername()))
                 .collect(Collectors.toList());
@@ -49,25 +50,28 @@ public class MessageServiceImpl implements IMessageService {
         Message newMessage = new Message(saveMessageDto.getMessage(), user, chat);
 
         messageRepository.save(newMessage);
-        MessageResponseDto messageResponseDto = new MessageResponseDto(newMessage.getId(), newMessage.getMessage(), newMessage.getUser().getUsername());
+        MessageResponseDto messageResponseDto = new MessageResponseDto(newMessage.getId(), newMessage.getMessage(),
+                newMessage.getUser().getUsername());
 
         return messageResponseDto;
 
-        //generate wesocket
+        // generate wesocket
     }
 
-    /*@Override
-    public void saveMessage(Integer chatId, SaveMessageDto saveMessageDto) {
-        verifyExistsChatInUserChats(chatId);
-
-        User user = userRepository.findByUsername(getUserAutheticated()).get();
-        Chat chat = chatRepository.findById(chatId).get();
-        Message newMessage = new Message(saveMessageDto.getMessage(), user, chat);
-
-        messageRepository.save(newMessage);
-
-        //generate wesocket
-    }*/
+    /*
+     * @Override
+     * public void saveMessage(Integer chatId, SaveMessageDto saveMessageDto) {
+     * verifyExistsChatInUserChats(chatId);
+     * 
+     * User user = userRepository.findByUsername(getUserAutheticated()).get();
+     * Chat chat = chatRepository.findById(chatId).get();
+     * Message newMessage = new Message(saveMessageDto.getMessage(), user, chat);
+     * 
+     * messageRepository.save(newMessage);
+     * 
+     * //generate wesocket
+     * }
+     */
 
     private String getUserAutheticated() {
         return SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
