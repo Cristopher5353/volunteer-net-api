@@ -17,6 +17,10 @@ public class UserDetailService implements UserDetails {
         this.user = user;
     }
 
+    public int getId() {
+        return user.getId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Role rol = user.getRole();

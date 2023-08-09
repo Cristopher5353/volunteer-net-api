@@ -63,6 +63,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String username = ((UserDetailService) authResult.getPrincipal())
                 .getUsername();
 
+        int userId = ((UserDetailService) authResult.getPrincipal()).getId();
+
         String roles = authResult.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -70,6 +72,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String token = Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
+                .claim("id", userId)
                 .signWith(TokenConfig.SECRET_KEY)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 36000000))

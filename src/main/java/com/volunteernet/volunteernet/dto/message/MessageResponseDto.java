@@ -4,15 +4,17 @@ public class MessageResponseDto {
     private int id;
     private String message;
     private String user;
+    private boolean myMessage;
 
-    public MessageResponseDto(int id, String message, String user) {
+    public MessageResponseDto(int id, String message, String user, boolean myMessage) {
         this.id = id;
         this.message = message;
         this.user = user;
+        this.myMessage = myMessage;
     }
 
     public int getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(int id) {
@@ -20,7 +22,7 @@ public class MessageResponseDto {
     }
 
     public String getMessage() {
-        return this.message;
+        return message;
     }
 
     public void setMessage(String message) {
@@ -28,10 +30,18 @@ public class MessageResponseDto {
     }
 
     public String getUser() {
-        return this.user;
+        return user;
     }
 
     public void setUser(String user) {
         this.user = user;
+    }
+
+    public boolean isMyMessage() {
+        return myMessage;
+    }
+
+    public void setMyMessage(boolean myMessage) {
+        this.myMessage = myMessage;
     }
 }

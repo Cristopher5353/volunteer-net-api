@@ -1,7 +1,7 @@
 package com.volunteernet.volunteernet.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
-import com.volunteernet.volunteernet.dto.chat.ChatResponseDto;
+import com.volunteernet.volunteernet.dto.chatNotification.ChatNotificationDto;
 import com.volunteernet.volunteernet.services.IServices.IChatService;
 import com.volunteernet.volunteernet.util.handler.ok.ResponseHandlerOk;
 import java.util.List;
@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
 public class ChatController {
@@ -17,7 +19,12 @@ public class ChatController {
 
     @GetMapping("/api/users/chats")
     public ResponseEntity<Object> getChatsByUser() {
-        List<ChatResponseDto> chatsByUser = chatService.findChatsByUser();
+        List<ChatNotificationDto> chatsByUser = chatService.findChatsByUser();
         return ResponseHandlerOk.generateResponse("Chats de usuario", HttpStatus.OK, chatsByUser);
+    }
+    
+    @PostMapping("/api/chats/{chatId}/disconnect")
+    public void disconnectUserFromChat(@PathVariable Integer chatId) {
+        chatService.disconnectUserFromChat(chatId);
     }
 }

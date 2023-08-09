@@ -1,5 +1,6 @@
 package com.volunteernet.volunteernet.models;
 
+import java.util.List;
 import java.util.Set;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 @Entity
 @Table(name = "users")
@@ -45,8 +47,14 @@ public class User {
     @JoinTable(name = "users_chats", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "chat_id"))
     private Set<Chat> chats;
 
+    @OneToMany(mappedBy = "user")
+    private List<Publication> publications;
+
+    @OneToMany(mappedBy = "user")
+    private List<ChatNotification> chatNotifications;
+
     public int getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(int id) {
@@ -54,7 +62,7 @@ public class User {
     }
 
     public String getUsername() {
-        return this.username;
+        return username;
     }
 
     public void setUsername(String username) {
@@ -62,7 +70,7 @@ public class User {
     }
 
     public String getPassword() {
-        return this.password;
+        return password;
     }
 
     public void setPassword(String password) {
@@ -70,7 +78,7 @@ public class User {
     }
 
     public String getEmail() {
-        return this.email;
+        return email;
     }
 
     public void setEmail(String email) {
@@ -78,7 +86,7 @@ public class User {
     }
 
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public void setDescription(String description) {
@@ -86,7 +94,7 @@ public class User {
     }
 
     public String getPhoto() {
-        return this.photo;
+        return photo;
     }
 
     public void setPhoto(String photo) {
@@ -94,7 +102,7 @@ public class User {
     }
 
     public String getWebsite() {
-        return this.website;
+        return website;
     }
 
     public void setWebsite(String website) {
@@ -102,7 +110,7 @@ public class User {
     }
 
     public Role getRole() {
-        return this.role;
+        return role;
     }
 
     public void setRole(Role role) {
@@ -110,10 +118,27 @@ public class User {
     }
 
     public Set<Chat> getChats() {
-        return this.chats;
+        return chats;
     }
 
     public void setChats(Set<Chat> chats) {
         this.chats = chats;
     }
+
+    public List<Publication> getPublications() {
+        return publications;
+    }
+
+    public void setPublications(List<Publication> publications) {
+        this.publications = publications;
+    }
+
+    public List<ChatNotification> getChatNotifications() {
+        return chatNotifications;
+    }
+
+    public void setChatNotifications(List<ChatNotification> chatNotifications) {
+        this.chatNotifications = chatNotifications;
+    }
+    
 }

@@ -37,8 +37,11 @@ public class SpringSecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authconfig -> {
-            authconfig.requestMatchers("/api/chats/**", "/api/users/chats", "/api/publications").hasAnyAuthority("Voluntario", "GrupoVoluntario");
-            authconfig.requestMatchers("/api/users", "/notificaciones", "/ws/**").permitAll();
+            authconfig.requestMatchers("/api/users/save").permitAll();
+            authconfig.requestMatchers("/api/chats/**", "/api/users/**", "/api/publications", "/api/notificationscount",
+                    "/api/resetnotificationcount", "/api/notificationschatcount", "/api/resetnotificationchatcount",
+                    "/api/resetunreadcountchatnotification", "/api/incrementnotificationchatcount").hasAnyAuthority("Voluntario", "GrupoVoluntario");
+            authconfig.requestMatchers("/ws/**").permitAll();
             authconfig.anyRequest().authenticated();
         })
                 .addFilter(new JwtAuthenticationFilter(authenticationConfiguration.getAuthenticationManager()))
@@ -65,7 +68,8 @@ public class SpringSecurityConfig {
 
     @Bean
     FilterRegistrationBean<CorsFilter> corsFilter() {
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter(corsConfigurationSource()));
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(
+                new CorsFilter(corsConfigurationSource()));
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
     }

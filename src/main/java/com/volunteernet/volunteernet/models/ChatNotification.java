@@ -10,22 +10,23 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "publications")
-public class Publication {
+@Table(name = "chats_notification")
+public class ChatNotification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
 
-    @Column(name = "description")
-    private String description;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "created_at")
-    private String createdAt;
+    @ManyToOne
+    @JoinColumn(name = "chat_id")
+    private Chat chat;
+
+    @Column(name = "unread_count")
+    private int unreadCount;
 
     public int getId() {
         return id;
@@ -33,14 +34,6 @@ public class Publication {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public User getUser() {
@@ -51,12 +44,19 @@ public class Publication {
         this.user = user;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
+    public Chat getChat() {
+        return chat;
     }
 
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public void setChat(Chat chat) {
+        this.chat = chat;
     }
 
+    public int getUnreadCount() {
+        return unreadCount;
+    }
+
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
+    }
 }

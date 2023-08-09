@@ -3,18 +3,24 @@ package com.volunteernet.volunteernet.services.ServiceImpl;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.volunteernet.volunteernet.dto.message.MessageResponseDto;
+import com.volunteernet.volunteernet.dto.message.MessageResponseWebsocketDto;
 import com.volunteernet.volunteernet.dto.message.SaveMessageDto;
 import com.volunteernet.volunteernet.exceptions.ChatNotExistsInUserChatsException;
 import com.volunteernet.volunteernet.models.Chat;
+import com.volunteernet.volunteernet.models.ChatNotification;
 import com.volunteernet.volunteernet.models.Message;
 import com.volunteernet.volunteernet.models.User;
+import com.volunteernet.volunteernet.repositories.IChatNotificationRepository;
 import com.volunteernet.volunteernet.repositories.IChatRepository;
 import com.volunteernet.volunteernet.repositories.IMessageRepository;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
 import com.volunteernet.volunteernet.services.IServices.IMessageService;
+import com.volunteernet.volunteernet.util.handler.memory.ChatUserPresenceTracker;
+import com.volunteernet.volunteernet.util.handler.memory.UserPresenceTracker;
 
 @Service
 public class MessageServiceImpl implements IMessageService {
@@ -28,50 +34,82 @@ public class MessageServiceImpl implements IMessageService {
     @Autowired
     private IMessageRepository messageRepository;
 
+    @Autowired
+    private IChatNotificationRepository chatNotificationRepository;
+
+    @Autowired
+    private ChatUserPresenceTracker chatUserPresenceTracker;
+
+    @Autowired
+    private UserPresenceTracker userPresenceTracker;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @Override
     public List<MessageResponseDto> findAllMessagesByChat(Integer chatId) {
-        verifyExistsChatInUserChats(chatId);
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotExistsInUserChatsException());
+        verifyExistsChatInUserChats(chat.getId());
 
-        Chat chat = chatRepository.findById(chatId).get();
+        User user = userRepository.findByUsername(getUserAutheticated()).get();
 
         return chat.getMessages()
                 .stream()
                 .map(message -> new MessageResponseDto(message.getId(), message.getMessage(),
-                        message.getUser().getUsername()))
+                        message.getUser().getUsername(), (user.getId() == message.getUser().getId())))
                 .collect(Collectors.toList());
     }
 
     @Override
     public MessageResponseDto saveMessage(Integer chatId, SaveMessageDto saveMessageDto) {
-        verifyExistsChatInUserChats(chatId);
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotExistsInUserChatsException());
+        verifyExistsChatInUserChats(chat.getId());
 
         User user = userRepository.findByUsername(getUserAutheticated()).get();
-        Chat chat = chatRepository.findById(chatId).get();
         Message newMessage = new Message(saveMessageDto.getMessage(), user, chat);
 
         messageRepository.save(newMessage);
+
         MessageResponseDto messageResponseDto = new MessageResponseDto(newMessage.getId(), newMessage.getMessage(),
-                newMessage.getUser().getUsername());
+                newMessage.getUser().getUsername(), true);
 
+        MessageResponseWebsocketDto messageResponseWebsocketDto = new MessageResponseWebsocketDto();
+        messageResponseWebsocketDto.setMessageResponseDto(messageResponseDto);
+        messageResponseWebsocketDto.setChatId(chat.getId());
+
+        List<User> usersChat = chat.getUsers().stream().filter(userFilter -> userFilter.getId() != user.getId())
+                .collect(Collectors.toList());
+
+        for (User userChat : usersChat) {
+            if (!chatUserPresenceTracker.isUserConnectedToChat(chat.getId(), userChat)) {
+                ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(userChat.getId(),
+                        chat.getId());
+
+                if (chatNotification == null) {
+                    chatNotification = new ChatNotification();
+                    chatNotification.setUser(userChat);
+                    chatNotification.setChat(chat);
+                    chatNotification.setUnreadCount(1);
+                } else {
+                    chatNotification.setUnreadCount(chatNotification.getUnreadCount() + 1);
+                }
+
+                chatNotificationRepository.save(chatNotification);
+            }
+
+            if (userPresenceTracker.isUserOnline(userChat.getId())) {
+                messageResponseWebsocketDto.getMessageResponseDto().setMyMessage(false);
+                messagingTemplate.convertAndSendToUser(String.valueOf(userChat.getId()),
+                        "/queue/notifications/chats/all", messageResponseWebsocketDto);
+
+                messagingTemplate.convertAndSendToUser(String.valueOf(userChat.getId()),
+                        "/queue/notifications/chats", "ok");
+            }
+        }
+
+        messageResponseDto.setMyMessage(true);
         return messageResponseDto;
-
-        // generate wesocket
     }
-
-    /*
-     * @Override
-     * public void saveMessage(Integer chatId, SaveMessageDto saveMessageDto) {
-     * verifyExistsChatInUserChats(chatId);
-     * 
-     * User user = userRepository.findByUsername(getUserAutheticated()).get();
-     * Chat chat = chatRepository.findById(chatId).get();
-     * Message newMessage = new Message(saveMessageDto.getMessage(), user, chat);
-     * 
-     * messageRepository.save(newMessage);
-     * 
-     * //generate wesocket
-     * }
-     */
 
     private String getUserAutheticated() {
         return SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
@@ -86,5 +124,4 @@ public class MessageServiceImpl implements IMessageService {
             throw new ChatNotExistsInUserChatsException();
         }
     }
-
 }

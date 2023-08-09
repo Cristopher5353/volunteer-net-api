@@ -7,5 +7,4 @@ import com.volunteernet.volunteernet.dto.message.SaveMessageDto;
 public interface IMessageService {
     List<MessageResponseDto> findAllMessagesByChat(Integer chatId);
     MessageResponseDto saveMessage(Integer chatId, SaveMessageDto saveMessageDto);
-    //void saveMessage(Integer chatId, SaveMessageDto saveMessageDto);
 }

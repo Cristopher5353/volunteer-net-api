@@ -1,8 +1,9 @@
 package com.volunteernet.volunteernet.services.IServices;
 
 import java.util.List;
-import com.volunteernet.volunteernet.dto.chat.ChatResponseDto;
+import com.volunteernet.volunteernet.dto.chatNotification.ChatNotificationDto;
 
 public interface IChatService {
-    List<ChatResponseDto> findChatsByUser();
+    List<ChatNotificationDto> findChatsByUser();
+    void disconnectUserFromChat(int chatId);
 }

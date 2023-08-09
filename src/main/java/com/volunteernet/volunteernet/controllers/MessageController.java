@@ -4,7 +4,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,12 +19,6 @@ public class MessageController {
     @Autowired
     private IMessageService messageService;
 
-    private final SimpMessagingTemplate messagingTemplate;
-
-    public MessageController(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
-
     @GetMapping("/api/chats/{chatId}/messages")
     public ResponseEntity<Object> getMessagesByChat(@PathVariable Integer chatId) {
         List<MessageResponseDto> messagesByChat = messageService.findAllMessagesByChat(chatId);
@@ -33,10 +26,10 @@ public class MessageController {
     }
 
     @PostMapping("/api/chats/{chatId}/messages")
-    public ResponseEntity<Object> saveMessage(@PathVariable Integer chatId, @RequestBody SaveMessageDto saveMessageDto) {
+    public ResponseEntity<Object> saveMessage(@PathVariable Integer chatId,
+            @RequestBody SaveMessageDto saveMessageDto) {
         MessageResponseDto messageResponseDto = messageService.saveMessage(chatId, saveMessageDto);
-        messagingTemplate.convertAndSend("/topic/" + chatId, messageResponseDto);
-
-        return ResponseHandlerOk.generateResponse("Mensaje registrado correctamente", HttpStatus.OK, messageResponseDto);
+        return ResponseHandlerOk.generateResponse("Mensaje registrado correctamente", HttpStatus.CREATED,
+                messageResponseDto);
     }
 }
