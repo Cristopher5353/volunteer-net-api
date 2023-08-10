@@ -1,12 +1,14 @@
 package com.volunteernet.volunteernet.services.ServiceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.volunteernet.volunteernet.dto.chatNotification.ChatNotificationDto;
+import com.volunteernet.volunteernet.models.ChatNotification;
 import com.volunteernet.volunteernet.models.User;
+import com.volunteernet.volunteernet.repositories.IChatNotificationRepository;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
 import com.volunteernet.volunteernet.services.IServices.IChatService;
 import com.volunteernet.volunteernet.util.handler.memory.ChatUserPresenceTracker;
@@ -17,13 +19,23 @@ public class ChatServiceImpl implements IChatService {
     private IUserRepository userRepository;
 
     @Autowired
+    private IChatNotificationRepository chatNotificationRepository;
+
+    @Autowired
     private ChatUserPresenceTracker chatUserPresenceTracker;
 
     @Override
     public List<ChatNotificationDto> findChatsByUser() {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
-        return user.getChatNotifications().stream().map(chat -> new ChatNotificationDto(chat.getChat().getId(),
-                chat.getUser().getUsername(), chat.getUnreadCount())).collect(Collectors.toList());
+        List<ChatNotificationDto> chatsByUser = new ArrayList<>();
+
+        user.getChats().stream().forEach(chat -> {
+            ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(user.getId(), chat.getId());
+            ChatNotificationDto chatNotificationDto = new ChatNotificationDto(chat.getId(), chat.getUser().getUsername(), (chatNotification == null) ?0 :chatNotification.getUnreadCount());
+            chatsByUser.add(chatNotificationDto);
+        });
+
+        return chatsByUser;
     }
 
     @Override

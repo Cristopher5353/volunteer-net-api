@@ -29,9 +29,12 @@ public class ChatNotificationServiceImpl implements IChatNotificationService {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
         ChatNotification chatNotification = chatNotificationRepository
                 .findByUserIdAndChatId(user.getId(), chatNotificationResetUnReadCountDto.getChatId());
+
+        if(chatNotification != null) {
+            chatNotification.setUnreadCount(0);
+            chatNotificationRepository.save(chatNotification);
+        }
                 
-        chatNotification.setUnreadCount(0);
-        chatNotificationRepository.save(chatNotification);
         chatUserPresenceTracker.userConnectedToChat(chatNotificationResetUnReadCountDto.getChatId(), user);
     }
 

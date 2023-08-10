@@ -14,9 +14,11 @@ import com.volunteernet.volunteernet.exceptions.EmailAlreadyExistsException;
 import com.volunteernet.volunteernet.exceptions.FollowerAlreadyFollowToFollowing;
 import com.volunteernet.volunteernet.exceptions.RoleNotExistsException;
 import com.volunteernet.volunteernet.exceptions.UserNotExistsException;
+import com.volunteernet.volunteernet.models.Chat;
 import com.volunteernet.volunteernet.models.Follower;
 import com.volunteernet.volunteernet.models.Role;
 import com.volunteernet.volunteernet.models.User;
+import com.volunteernet.volunteernet.repositories.IChatRepository;
 import com.volunteernet.volunteernet.repositories.IFollowerRepository;
 import com.volunteernet.volunteernet.repositories.IPublicationRepository;
 import com.volunteernet.volunteernet.repositories.IRoleRepository;
@@ -38,6 +40,9 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private IPublicationRepository publicationRepository;
+
+    @Autowired
+    private IChatRepository chatRepository;
 
     @Autowired
     private UserPresenceTracker userPresenceTracker;
@@ -66,12 +71,19 @@ public class UserServiceImpl implements IUserService {
         newUser.setRole(findRoleById.get());
 
         userRepository.save(newUser);
+
+        if (findRoleById.get().getId() == 2) {
+            Chat newChat = new Chat();
+            newChat.setUser(newUser);
+
+            chatRepository.save(newChat);
+        }
     }
 
     @Override
     public UserResponseDto findUserById(int id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotExistsException());
-        
+
         List<PublicationResponseDto> publicationsDto = new ArrayList<>();
         Follower follower = followerRepository.findByFollowingIdAndFollowerId(id,
                 userRepository.findByUsername(getUserAutheticated()).get().getId());
@@ -92,7 +104,7 @@ public class UserServiceImpl implements IUserService {
         Follower follow = followerRepository.findByFollowingIdAndFollowerId(id,
                 follower.getId());
 
-        if(follow != null) {
+        if (follow != null) {
             throw new FollowerAlreadyFollowToFollowing();
         }
 
@@ -106,7 +118,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public void userUnFollow(int id) {
         User following = userRepository.findById(id).orElseThrow(() -> new UserNotExistsException());
-        
+
         Follower follower = followerRepository.findByFollowingIdAndFollowerId(following.getId(),
                 userRepository.findByUsername(getUserAutheticated()).get().getId());
         followerRepository.delete(follower);
