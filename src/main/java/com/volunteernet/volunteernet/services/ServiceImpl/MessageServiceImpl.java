@@ -14,11 +14,13 @@ import com.volunteernet.volunteernet.models.Chat;
 import com.volunteernet.volunteernet.models.ChatNotification;
 import com.volunteernet.volunteernet.models.Message;
 import com.volunteernet.volunteernet.models.User;
+import com.volunteernet.volunteernet.models.UserChat;
 import com.volunteernet.volunteernet.repositories.IChatNotificationRepository;
 import com.volunteernet.volunteernet.repositories.IChatRepository;
 import com.volunteernet.volunteernet.repositories.IMessageRepository;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
 import com.volunteernet.volunteernet.services.IServices.IMessageService;
+import com.volunteernet.volunteernet.services.IServices.INotificationCountService;
 import com.volunteernet.volunteernet.util.handler.memory.ChatUserPresenceTracker;
 import com.volunteernet.volunteernet.util.handler.memory.UserPresenceTracker;
 
@@ -36,6 +38,9 @@ public class MessageServiceImpl implements IMessageService {
 
     @Autowired
     private IChatNotificationRepository chatNotificationRepository;
+
+    @Autowired
+    private INotificationCountService notificationCountService;
 
     @Autowired
     private ChatUserPresenceTracker chatUserPresenceTracker;
@@ -77,17 +82,17 @@ public class MessageServiceImpl implements IMessageService {
         messageResponseWebsocketDto.setMessageResponseDto(messageResponseDto);
         messageResponseWebsocketDto.setChatId(chat.getId());
 
-        List<User> usersChat = chat.getUsers().stream().filter(userFilter -> userFilter.getId() != user.getId())
+        List<UserChat> usersChats = chat.getUsers().stream().filter(userChat -> userChat.getUser().getId() != user.getId())
                 .collect(Collectors.toList());
 
-        for (User userChat : usersChat) {
-            if (!chatUserPresenceTracker.isUserConnectedToChat(chat.getId(), userChat)) {
-                ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(userChat.getId(),
+        for (UserChat userChat : usersChats) {
+            if (!chatUserPresenceTracker.isUserConnectedToChat(chat.getId(), userChat.getUser())) {
+                ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(userChat.getUser().getId(),
                         chat.getId());
 
                 if (chatNotification == null) {
                     chatNotification = new ChatNotification();
-                    chatNotification.setUser(userChat);
+                    chatNotification.setUser(userChat.getUser());
                     chatNotification.setChat(chat);
                     chatNotification.setUnreadCount(1);
                 } else {
@@ -97,13 +102,15 @@ public class MessageServiceImpl implements IMessageService {
                 chatNotificationRepository.save(chatNotification);
             }
 
-            if (userPresenceTracker.isUserOnline(userChat.getId())) {
+            if (userPresenceTracker.isUserOnline(userChat.getUser().getId())) {
                 messageResponseWebsocketDto.getMessageResponseDto().setMyMessage(false);
-                messagingTemplate.convertAndSendToUser(String.valueOf(userChat.getId()),
+                messagingTemplate.convertAndSendToUser(String.valueOf(userChat.getUser().getId()),
                         "/queue/notifications/chats/all", messageResponseWebsocketDto);
 
-                messagingTemplate.convertAndSendToUser(String.valueOf(userChat.getId()),
+                messagingTemplate.convertAndSendToUser(String.valueOf(userChat.getUser().getId()),
                         "/queue/notifications/chats", "ok");
+            } else {
+                notificationCountService.incrementNotificationChatCountByUser(userChat.getUser().getId());
             }
         }
 
@@ -118,7 +125,7 @@ public class MessageServiceImpl implements IMessageService {
     private void verifyExistsChatInUserChats(Integer chatId) {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
 
-        boolean existsChatInUserChats = user.getChats().stream().anyMatch(chat -> chat.getId() == chatId);
+        boolean existsChatInUserChats = user.getChats().stream().anyMatch(userChat -> userChat.getChat().getId() == chatId);
 
         if (!existsChatInUserChats) {
             throw new ChatNotExistsInUserChatsException();

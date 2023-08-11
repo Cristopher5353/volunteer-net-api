@@ -1,18 +1,16 @@
 package com.volunteernet.volunteernet.models;
 
 import java.util.List;
-import java.util.Set;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -43,9 +41,8 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @ManyToMany
-    @JoinTable(name = "users_chats", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "chat_id"))
-    private Set<Chat> chats;
+    @OneToMany(mappedBy = "user")
+    private List<UserChat> chats;
 
     @OneToMany(mappedBy = "user")
     private List<Publication> publications;
@@ -117,11 +114,11 @@ public class User {
         this.role = role;
     }
 
-    public Set<Chat> getChats() {
+    public List<UserChat> getChats() {
         return chats;
     }
 
-    public void setChats(Set<Chat> chats) {
+    public void setChats(List<UserChat> chats) {
         this.chats = chats;
     }
 
@@ -140,5 +137,5 @@ public class User {
     public void setChatNotifications(List<ChatNotification> chatNotifications) {
         this.chatNotifications = chatNotifications;
     }
-    
+
 }

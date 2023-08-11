@@ -1,6 +1,5 @@
 package com.volunteernet.volunteernet.models;
 
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,12 +7,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "chats")
-public class Chat {
+@Table(name = "users_chats")
+public class UserChat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -23,11 +21,15 @@ public class Chat {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "chat")
-    private List<Message> messages;
+    @ManyToOne
+    @JoinColumn(name = "chat_id")
+    private Chat chat;
 
-    @OneToMany(mappedBy = "chat")
-    private List<UserChat> users;
+    @Column(name = "is_request")
+    private boolean isRequest;
+
+    @Column(name = "state")
+    private int state;
 
     public int getId() {
         return id;
@@ -45,20 +47,27 @@ public class Chat {
         this.user = user;
     }
 
-    public List<Message> getMessages() {
-        return messages;
+    public Chat getChat() {
+        return chat;
     }
 
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
+    public void setChat(Chat chat) {
+        this.chat = chat;
     }
 
-    public List<UserChat> getUsers() {
-        return users;
+    public boolean isRequest() {
+        return isRequest;
     }
 
-    public void setUsers(List<UserChat> users) {
-        this.users = users;
+    public void setRequest(boolean isRequest) {
+        this.isRequest = isRequest;
     }
 
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
 }

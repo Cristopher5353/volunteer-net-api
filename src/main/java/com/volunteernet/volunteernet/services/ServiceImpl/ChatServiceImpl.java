@@ -29,9 +29,9 @@ public class ChatServiceImpl implements IChatService {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
         List<ChatNotificationDto> chatsByUser = new ArrayList<>();
 
-        user.getChats().stream().forEach(chat -> {
-            ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(user.getId(), chat.getId());
-            ChatNotificationDto chatNotificationDto = new ChatNotificationDto(chat.getId(), chat.getUser().getUsername(), (chatNotification == null) ?0 :chatNotification.getUnreadCount());
+        user.getChats().stream().forEach(userChat -> {
+            ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(user.getId(), userChat.getChat().getId());
+            ChatNotificationDto chatNotificationDto = new ChatNotificationDto(userChat.getChat().getId(), userChat.getChat().getUser().getUsername(), (chatNotification == null) ?0 :chatNotification.getUnreadCount());
             chatsByUser.add(chatNotificationDto);
         });
 

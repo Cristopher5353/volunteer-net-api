@@ -3,7 +3,6 @@ package com.volunteernet.volunteernet.services.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import com.volunteernet.volunteernet.dto.chatNotification.ChatNotificationResetUnReadCountDto;
 import com.volunteernet.volunteernet.models.ChatNotification;
 import com.volunteernet.volunteernet.models.NotificationCount;
@@ -49,6 +48,19 @@ public class NotificationCountImpl implements INotificationCountService {
 
         if (notificationCount == null) {
             notificationCount = new NotificationCount(user.getId(), 0, 1);
+        } else {
+            notificationCount.setChatCount(notificationCount.getChatCount() + 1);
+        }
+
+        notificationCountRepository.save(notificationCount);
+    }
+
+    @Override
+    public void incrementNotificationChatCountByUser(int userId) {
+        NotificationCount notificationCount = notificationCountRepository.findByUserId(userId);
+
+        if (notificationCount == null) {
+            notificationCount = new NotificationCount(userId, 0, 1);
         } else {
             notificationCount.setChatCount(notificationCount.getChatCount() + 1);
         }

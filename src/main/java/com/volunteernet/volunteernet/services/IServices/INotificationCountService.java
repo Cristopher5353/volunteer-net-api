@@ -5,6 +5,7 @@ import com.volunteernet.volunteernet.dto.chatNotification.ChatNotificationResetU
 public interface INotificationCountService {
     void incrementNotificationCount(int userId);
     void incrementNotificationChatCount();
+    void incrementNotificationChatCountByUser(int userId);
     int getNotificationCount();
     int getNotificationChatCount();
     void resetNotificationCount();
