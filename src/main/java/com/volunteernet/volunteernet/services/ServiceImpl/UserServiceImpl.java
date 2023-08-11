@@ -18,10 +18,12 @@ import com.volunteernet.volunteernet.models.Chat;
 import com.volunteernet.volunteernet.models.Follower;
 import com.volunteernet.volunteernet.models.Role;
 import com.volunteernet.volunteernet.models.User;
+import com.volunteernet.volunteernet.models.UserChat;
 import com.volunteernet.volunteernet.repositories.IChatRepository;
 import com.volunteernet.volunteernet.repositories.IFollowerRepository;
 import com.volunteernet.volunteernet.repositories.IPublicationRepository;
 import com.volunteernet.volunteernet.repositories.IRoleRepository;
+import com.volunteernet.volunteernet.repositories.IUserChatRepository;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
 import com.volunteernet.volunteernet.services.IServices.IUserService;
 import com.volunteernet.volunteernet.util.handler.memory.UserPresenceTracker;
@@ -43,6 +45,9 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private IChatRepository chatRepository;
+
+    @Autowired
+    private IUserChatRepository userChatRepository;
 
     @Autowired
     private UserPresenceTracker userPresenceTracker;
@@ -77,6 +82,14 @@ public class UserServiceImpl implements IUserService {
             newChat.setUser(newUser);
 
             chatRepository.save(newChat);
+
+            UserChat newUserChat = new UserChat();
+            newUserChat.setUser(newUser);
+            newUserChat.setChat(newChat);
+            newUserChat.setRequest(false);
+            newUserChat.setState(1);
+
+            userChatRepository.save(newUserChat);
         }
     }
 
