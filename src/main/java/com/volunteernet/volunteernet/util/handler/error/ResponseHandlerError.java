@@ -16,6 +16,7 @@ import com.volunteernet.volunteernet.exceptions.ChatNotExistsInUserChatsExceptio
 import com.volunteernet.volunteernet.exceptions.EmailAlreadyExistsException;
 import com.volunteernet.volunteernet.exceptions.FollowerAlreadyFollowToFollowing;
 import com.volunteernet.volunteernet.exceptions.RoleNotExistsException;
+import com.volunteernet.volunteernet.exceptions.UserIsNotVolunteerGroupException;
 import com.volunteernet.volunteernet.exceptions.UserNotExistsException;
 
 @ControllerAdvice
@@ -94,7 +95,7 @@ public class ResponseHandlerError {
 
         ErrorResponse errorResponse = new ErrorResponse();
 
-        errorResponse.setStatus(HttpStatus.BAD_GATEWAY.value());
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
         errorResponse.setMessage(ex.getMessage());
         errorResponse.setErrors(null);
 
@@ -102,7 +103,7 @@ public class ResponseHandlerError {
     }
 
     @ExceptionHandler(ChatNotExistsException.class)
-    protected ResponseEntity<Object> handleChatNotExistsException(FollowerAlreadyFollowToFollowing ex,
+    protected ResponseEntity<Object> handleChatNotExistsException(ChatNotExistsException ex,
             WebRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse();
@@ -112,5 +113,18 @@ public class ResponseHandlerError {
         errorResponse.setErrors(null);
 
         return new ResponseEntity<Object>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserIsNotVolunteerGroupException.class)
+    protected ResponseEntity<Object> handleUserIsNotVolunteerGroupException(UserIsNotVolunteerGroupException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse();
+
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setMessage(ex.getMessage());
+        errorResponse.setErrors(null);
+
+        return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

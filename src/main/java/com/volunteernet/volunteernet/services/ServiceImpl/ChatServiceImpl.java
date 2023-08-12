@@ -30,8 +30,11 @@ public class ChatServiceImpl implements IChatService {
         List<ChatNotificationDto> chatsByUser = new ArrayList<>();
 
         user.getChats().stream().forEach(userChat -> {
-            ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(user.getId(), userChat.getChat().getId());
-            ChatNotificationDto chatNotificationDto = new ChatNotificationDto(userChat.getChat().getId(), userChat.getChat().getUser().getUsername(), (chatNotification == null) ?0 :chatNotification.getUnreadCount());
+            ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(user.getId(),
+                    userChat.getChat().getId());
+            ChatNotificationDto chatNotificationDto = new ChatNotificationDto(userChat.getChat().getId(),
+                    userChat.getChat().getUser().getUsername(),
+                    (chatNotification == null) ? 0 : chatNotification.getUnreadCount());
             chatsByUser.add(chatNotificationDto);
         });
 
@@ -41,7 +44,7 @@ public class ChatServiceImpl implements IChatService {
     @Override
     public void disconnectUserFromChat(int chatId) {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
-       chatUserPresenceTracker.userDisconnectedFromChat(chatId, user);
+        chatUserPresenceTracker.userDisconnectedFromChat(chatId, user);
     }
 
     private String getUserAutheticated() {

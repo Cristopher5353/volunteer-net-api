@@ -13,6 +13,7 @@ import com.volunteernet.volunteernet.dto.user.UserSaveDto;
 import com.volunteernet.volunteernet.exceptions.EmailAlreadyExistsException;
 import com.volunteernet.volunteernet.exceptions.FollowerAlreadyFollowToFollowing;
 import com.volunteernet.volunteernet.exceptions.RoleNotExistsException;
+import com.volunteernet.volunteernet.exceptions.UserIsNotVolunteerGroupException;
 import com.volunteernet.volunteernet.exceptions.UserNotExistsException;
 import com.volunteernet.volunteernet.models.Chat;
 import com.volunteernet.volunteernet.models.Follower;
@@ -96,17 +97,27 @@ public class UserServiceImpl implements IUserService {
     @Override
     public UserResponseDto findUserById(int id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotExistsException());
+        User userAuthenticated = userRepository.findByUsername(getUserAutheticated()).get();
+        int isMember = 0;
 
         List<PublicationResponseDto> publicationsDto = new ArrayList<>();
         Follower follower = followerRepository.findByFollowingIdAndFollowerId(id,
                 userRepository.findByUsername(getUserAutheticated()).get().getId());
+
+        if (user.getRole().getId() == 2) {
+            Chat chat = chatRepository.findByUserId(user.getId());
+            UserChat userChat = userChatRepository.findByUserIdAndChatId(userAuthenticated.getId(), chat.getId());
+
+            isMember = (userChat != null) ?(userChat.getState() == 1) ?2 :1 :0;
+        }
 
         publicationRepository.findByUserId(id).stream()
                 .forEach(publication -> publicationsDto.add(new PublicationResponseDto(publication.getId(),
                         publication.getDescription(), user.getUsername(), user.getId(), publication.getCreatedAt())));
 
         return new UserResponseDto(user.getId(), user.getUsername(), user.getEmail(), user.getDescription(),
-                user.getWebsite(), user.getRole().getName(), follower == null ? false : true, publicationsDto);
+                user.getWebsite(), user.getRole().getName(), follower == null ? false : true, isMember,
+                publicationsDto);
     }
 
     @Override
@@ -135,6 +146,29 @@ public class UserServiceImpl implements IUserService {
         Follower follower = followerRepository.findByFollowingIdAndFollowerId(following.getId(),
                 userRepository.findByUsername(getUserAutheticated()).get().getId());
         followerRepository.delete(follower);
+    }
+
+    @Override
+    public void userRequestToJoinGroup(int userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotExistsException());
+
+        if(user.getRole().getId() != 2) {
+            throw new UserIsNotVolunteerGroupException();
+        }
+
+        Chat chat = chatRepository.findByUserId(userId);
+        User userAuthenticated = userRepository.findByUsername(getUserAutheticated()).get();
+        UserChat userChat = userChatRepository.findByUserIdAndChatId(userAuthenticated.getId(), chat.getId());
+
+        if(userChat == null) {
+            UserChat newUserChat = new UserChat();
+            newUserChat.setUser(userAuthenticated);
+            newUserChat.setChat(chat);
+            newUserChat.setRequest(true);
+            newUserChat.setState(0);
+
+            userChatRepository.save(newUserChat);
+        }
     }
 
     @Override

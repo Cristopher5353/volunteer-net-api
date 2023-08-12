@@ -11,13 +11,14 @@ public class UserResponseDto {
     private String website;
     private String role;
     private boolean isFollower;
+    private int isMember;
     private List<PublicationResponseDto> publications;
 
     public UserResponseDto() {
     }
 
     public UserResponseDto(int id, String username, String email, String description, String website, String role,
-            boolean isFollower, List<PublicationResponseDto> publications) {
+            boolean isFollower, int isMember, List<PublicationResponseDto> publications) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -25,6 +26,7 @@ public class UserResponseDto {
         this.website = website;
         this.role = role;
         this.isFollower = isFollower;
+        this.isMember = isMember;
         this.publications = publications;
     }
 
@@ -82,6 +84,14 @@ public class UserResponseDto {
 
     public void setFollower(boolean isFollower) {
         this.isFollower = isFollower;
+    }
+
+    public int getIsMember() {
+        return isMember;
+    }
+
+    public void setIsMember(int isMember) {
+        this.isMember = isMember;
     }
 
     public List<PublicationResponseDto> getPublications() {

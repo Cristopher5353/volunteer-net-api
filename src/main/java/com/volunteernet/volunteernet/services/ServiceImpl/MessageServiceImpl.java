@@ -52,7 +52,7 @@ public class MessageServiceImpl implements IMessageService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public List<MessageResponseDto> findAllMessagesByChat(Integer chatId) {
+    public List<MessageResponseDto> findAllMessagesByChat(int chatId) {
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotExistsInUserChatsException());
         verifyExistsChatInUserChats(chat.getId());
 
@@ -66,7 +66,7 @@ public class MessageServiceImpl implements IMessageService {
     }
 
     @Override
-    public MessageResponseDto saveMessage(Integer chatId, SaveMessageDto saveMessageDto) {
+    public MessageResponseDto saveMessage(int chatId, SaveMessageDto saveMessageDto) {
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotExistsInUserChatsException());
         verifyExistsChatInUserChats(chat.getId());
 

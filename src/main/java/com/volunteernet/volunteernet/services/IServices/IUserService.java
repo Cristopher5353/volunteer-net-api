@@ -8,6 +8,7 @@ public interface IUserService {
     UserResponseDto findUserById(int id);
     void userFollow(int id);
     void userUnFollow(int id);
+    void userRequestToJoinGroup(int userId);
     void connectUser();
     void disconnectUser();
 }

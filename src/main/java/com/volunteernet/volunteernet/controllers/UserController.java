@@ -44,6 +44,12 @@ public class UserController {
         return ResponseHandlerOk.generateResponse("Se dejó de seguir al usuario", HttpStatus.OK, null);
     }
 
+    @PostMapping("/api/users/{userId}/join")
+    public ResponseEntity<Object> userRequestToJoinGroup(@PathVariable Integer userId) {
+        userService.userRequestToJoinGroup(userId);
+        return ResponseHandlerOk.generateResponse("Solicitud para unirse al grupo voluntario enviado correctamente", HttpStatus.OK, null);
+    }
+
     @PostMapping("/api/users/connect")
     public void connectUser() {
         userService.connectUser();
