@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.volunteernet.volunteernet.dto.message.MessageResponseDto;
 import com.volunteernet.volunteernet.dto.message.MessageResponseWebsocketDto;
 import com.volunteernet.volunteernet.dto.message.SaveMessageDto;
+import com.volunteernet.volunteernet.exceptions.ChatNotExistsException;
 import com.volunteernet.volunteernet.exceptions.ChatNotExistsInUserChatsException;
 import com.volunteernet.volunteernet.models.Chat;
 import com.volunteernet.volunteernet.models.ChatNotification;
@@ -67,7 +68,7 @@ public class MessageServiceImpl implements IMessageService {
 
     @Override
     public MessageResponseDto saveMessage(int chatId, SaveMessageDto saveMessageDto) {
-        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotExistsInUserChatsException());
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotExistsException());
         verifyExistsChatInUserChats(chat.getId());
 
         User user = userRepository.findByUsername(getUserAutheticated()).get();
@@ -125,7 +126,7 @@ public class MessageServiceImpl implements IMessageService {
     private void verifyExistsChatInUserChats(Integer chatId) {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
 
-        boolean existsChatInUserChats = user.getChats().stream().anyMatch(userChat -> userChat.getChat().getId() == chatId);
+        boolean existsChatInUserChats = user.getChats().stream().filter(userChat -> userChat.getState() == 1).anyMatch(userChat -> userChat.getChat().getId() == chatId);
 
         if (!existsChatInUserChats) {
             throw new ChatNotExistsInUserChatsException();

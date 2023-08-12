@@ -29,7 +29,7 @@ public class ChatServiceImpl implements IChatService {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
         List<ChatNotificationDto> chatsByUser = new ArrayList<>();
 
-        user.getChats().stream().forEach(userChat -> {
+        user.getChats().stream().filter(userChat -> userChat.getState() == 1).forEach(userChat -> {
             ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(user.getId(),
                     userChat.getChat().getId());
             ChatNotificationDto chatNotificationDto = new ChatNotificationDto(userChat.getChat().getId(),
