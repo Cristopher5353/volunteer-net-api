@@ -47,7 +47,7 @@ public class PublicationServiceImpl implements IPublicationService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public void savePublication(PublicationSaveDto publicationSaveDto) {
+    public void save(PublicationSaveDto publicationSaveDto) {
         Publication newPublication = new Publication();
         newPublication.setDescription(publicationSaveDto.getDescription());
         newPublication.setUser(userRepository.findByUsername(getUserAutheticated()).get());
@@ -58,7 +58,7 @@ public class PublicationServiceImpl implements IPublicationService {
     }
 
     @Override
-    public List<PublicationResponseDto> findAllPublications() {
+    public List<PublicationResponseDto> findAll() {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
 
         return publicationRepository.findByUserIdNotEqual(user.getId())
@@ -78,7 +78,7 @@ public class PublicationServiceImpl implements IPublicationService {
                         "/queue/notifications", "ok");
             }
 
-            notificationCountService.incrementNotificationCount(follower.getFollower().getId());
+            notificationCountService.incrementGeneralCount(follower.getFollower().getId());
 
             Notification newNotification = new Notification();
             newNotification.setFollower(userRepository.findById(follower.getFollower().getId()).get());

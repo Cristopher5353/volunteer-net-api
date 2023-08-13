@@ -27,7 +27,7 @@ public class Chat {
     private List<Message> messages;
 
     @OneToMany(mappedBy = "chat")
-    private List<UserChat> users;
+    private List<ChatMember> users;
 
     public int getId() {
         return id;
@@ -53,11 +53,11 @@ public class Chat {
         this.messages = messages;
     }
 
-    public List<UserChat> getUsers() {
+    public List<ChatMember> getUsers() {
         return users;
     }
 
-    public void setUsers(List<UserChat> users) {
+    public void setUsers(List<ChatMember> users) {
         this.users = users;
     }
 

@@ -25,7 +25,7 @@ public class ChatServiceImpl implements IChatService {
     private ChatUserPresenceTracker chatUserPresenceTracker;
 
     @Override
-    public List<ChatNotificationDto> findChatsByUser() {
+    public List<ChatNotificationDto> findAllByUser() {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
         List<ChatNotificationDto> chatsByUser = new ArrayList<>();
 
@@ -42,7 +42,7 @@ public class ChatServiceImpl implements IChatService {
     }
 
     @Override
-    public void disconnectUserFromChat(int chatId) {
+    public void disconnectUser(int chatId) {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
         chatUserPresenceTracker.userDisconnectedFromChat(chatId, user);
     }

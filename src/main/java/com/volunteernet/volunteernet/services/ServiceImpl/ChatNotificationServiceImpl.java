@@ -24,7 +24,7 @@ public class ChatNotificationServiceImpl implements IChatNotificationService {
     private ChatUserPresenceTracker chatUserPresenceTracker;
 
     @Override
-    public void resetUnreadCountChatNotification(
+    public void resetUnreadCount(
             ChatNotificationResetUnReadCountDto chatNotificationResetUnReadCountDto) {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
         ChatNotification chatNotification = chatNotificationRepository

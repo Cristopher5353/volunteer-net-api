@@ -38,9 +38,9 @@ public class SpringSecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authconfig -> {
             authconfig.requestMatchers("/api/users/save").permitAll();
-            authconfig.requestMatchers("/api/chats/**", "/api/users/**", "/api/publications", "/api/notificationscount",
-                    "/api/resetnotificationcount", "/api/notificationschatcount", "/api/resetnotificationchatcount",
-                    "/api/resetunreadcountchatnotification", "/api/incrementnotificationchatcount").hasAnyAuthority("Voluntario", "GrupoVoluntario");
+            authconfig.requestMatchers("/api/chats/**", "/api/users/**", "/api/publications",
+                    "/api/notifications-count/**", "/api/chats-notifications/**", "api/chats-members/*")
+                    .hasAnyAuthority("Voluntario", "GrupoVoluntario");
             authconfig.requestMatchers("/ws/**").permitAll();
             authconfig.anyRequest().authenticated();
         })

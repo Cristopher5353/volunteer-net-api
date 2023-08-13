@@ -21,14 +21,14 @@ public class PublicationController {
     private IPublicationService publicationService;
 
     @GetMapping("/api/publications")
-    public ResponseEntity<Object> getPublications() {
-        List<PublicationResponseDto> publications = publicationService.findAllPublications();
+    public ResponseEntity<Object> getAll() {
+        List<PublicationResponseDto> publications = publicationService.findAll();
         return ResponseHandlerOk.generateResponse("Publicaciones", HttpStatus.OK, publications);
     }
 
     @PostMapping("/api/publications")
-    public ResponseEntity<Object> savePublication(@Valid @RequestBody PublicationSaveDto publicationSaveDto) {
-        publicationService.savePublication(publicationSaveDto);
+    public ResponseEntity<Object> save(@Valid @RequestBody PublicationSaveDto publicationSaveDto) {
+        publicationService.save(publicationSaveDto);
         return ResponseHandlerOk.generateResponse("Publicación registrada correctamente", HttpStatus.CREATED, null);
     }
 }

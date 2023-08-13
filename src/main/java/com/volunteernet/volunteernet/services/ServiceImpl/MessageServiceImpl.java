@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 import com.volunteernet.volunteernet.dto.message.MessageResponseDto;
 import com.volunteernet.volunteernet.dto.message.MessageResponseWebsocketDto;
 import com.volunteernet.volunteernet.dto.message.SaveMessageDto;
-import com.volunteernet.volunteernet.exceptions.ChatNotExistsException;
 import com.volunteernet.volunteernet.exceptions.ChatNotExistsInUserChatsException;
+import com.volunteernet.volunteernet.exceptions.ResourceNotFoundException;
 import com.volunteernet.volunteernet.models.Chat;
+import com.volunteernet.volunteernet.models.ChatMember;
 import com.volunteernet.volunteernet.models.ChatNotification;
 import com.volunteernet.volunteernet.models.Message;
 import com.volunteernet.volunteernet.models.User;
-import com.volunteernet.volunteernet.models.UserChat;
 import com.volunteernet.volunteernet.repositories.IChatNotificationRepository;
 import com.volunteernet.volunteernet.repositories.IChatRepository;
 import com.volunteernet.volunteernet.repositories.IMessageRepository;
@@ -53,7 +53,7 @@ public class MessageServiceImpl implements IMessageService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public List<MessageResponseDto> findAllMessagesByChat(int chatId) {
+    public List<MessageResponseDto> findAllByChat(int chatId) {
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotExistsInUserChatsException());
         verifyExistsChatInUserChats(chat.getId());
 
@@ -67,8 +67,8 @@ public class MessageServiceImpl implements IMessageService {
     }
 
     @Override
-    public MessageResponseDto saveMessage(int chatId, SaveMessageDto saveMessageDto) {
-        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotExistsException());
+    public MessageResponseDto save(int chatId, SaveMessageDto saveMessageDto) {
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ResourceNotFoundException());
         verifyExistsChatInUserChats(chat.getId());
 
         User user = userRepository.findByUsername(getUserAutheticated()).get();
@@ -83,17 +83,17 @@ public class MessageServiceImpl implements IMessageService {
         messageResponseWebsocketDto.setMessageResponseDto(messageResponseDto);
         messageResponseWebsocketDto.setChatId(chat.getId());
 
-        List<UserChat> usersChats = chat.getUsers().stream().filter(userChat -> userChat.getUser().getId() != user.getId())
+        List<ChatMember> chatMembers = chat.getUsers().stream().filter(chatMember -> chatMember.getUser().getId() != user.getId())
                 .collect(Collectors.toList());
 
-        for (UserChat userChat : usersChats) {
-            if (!chatUserPresenceTracker.isUserConnectedToChat(chat.getId(), userChat.getUser())) {
-                ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(userChat.getUser().getId(),
+        for (ChatMember chatMember : chatMembers) {
+            if (!chatUserPresenceTracker.isUserConnectedToChat(chat.getId(), chatMember.getUser())) {
+                ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(chatMember.getUser().getId(),
                         chat.getId());
 
                 if (chatNotification == null) {
                     chatNotification = new ChatNotification();
-                    chatNotification.setUser(userChat.getUser());
+                    chatNotification.setUser(chatMember.getUser());
                     chatNotification.setChat(chat);
                     chatNotification.setUnreadCount(1);
                 } else {
@@ -103,15 +103,15 @@ public class MessageServiceImpl implements IMessageService {
                 chatNotificationRepository.save(chatNotification);
             }
 
-            if (userPresenceTracker.isUserOnline(userChat.getUser().getId())) {
+            if (userPresenceTracker.isUserOnline(chatMember.getUser().getId())) {
                 messageResponseWebsocketDto.getMessageResponseDto().setMyMessage(false);
-                messagingTemplate.convertAndSendToUser(String.valueOf(userChat.getUser().getId()),
+                messagingTemplate.convertAndSendToUser(String.valueOf(chatMember.getUser().getId()),
                         "/queue/notifications/chats/all", messageResponseWebsocketDto);
 
-                messagingTemplate.convertAndSendToUser(String.valueOf(userChat.getUser().getId()),
+                messagingTemplate.convertAndSendToUser(String.valueOf(chatMember.getUser().getId()),
                         "/queue/notifications/chats", "ok");
             } else {
-                notificationCountService.incrementNotificationChatCountByUser(userChat.getUser().getId());
+                notificationCountService.incrementChatCountByUser(chatMember.getUser().getId());
             }
         }
 
@@ -126,7 +126,7 @@ public class MessageServiceImpl implements IMessageService {
     private void verifyExistsChatInUserChats(Integer chatId) {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
 
-        boolean existsChatInUserChats = user.getChats().stream().filter(userChat -> userChat.getState() == 1).anyMatch(userChat -> userChat.getChat().getId() == chatId);
+        boolean existsChatInUserChats = user.getChats().stream().filter(chatMember -> chatMember.getState() == 1).anyMatch(chatMember -> chatMember.getChat().getId() == chatId);
 
         if (!existsChatInUserChats) {
             throw new ChatNotExistsInUserChatsException();

@@ -16,9 +16,9 @@ public class ChatNotificationController {
     @Autowired
     private IChatNotificationService chatNotificationService;
 
-    @PostMapping("/api/resetunreadcountchatnotification")
-    public ResponseEntity<Object> resetUnreadCountChatNotification(@RequestBody ChatNotificationResetUnReadCountDto chatNotificationResetDto) {
-        chatNotificationService.resetUnreadCountChatNotification(chatNotificationResetDto);
+    @PostMapping("api/chats-notifications/reset-unread-count")
+    public ResponseEntity<Object> resetUnreadCount(@RequestBody ChatNotificationResetUnReadCountDto chatNotificationResetUnReadCountDto) {
+        chatNotificationService.resetUnreadCount(chatNotificationResetUnReadCountDto);
         return ResponseHandlerOk.generateResponse("Contador de mensajes no vistos por chat resetado", HttpStatus.OK, null);
     }
 }

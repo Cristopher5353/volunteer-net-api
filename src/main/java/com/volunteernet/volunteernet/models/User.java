@@ -42,7 +42,7 @@ public class User {
     private Role role;
 
     @OneToMany(mappedBy = "user")
-    private List<UserChat> chats;
+    private List<ChatMember> chats;
 
     @OneToMany(mappedBy = "user")
     private List<Publication> publications;
@@ -114,11 +114,11 @@ public class User {
         this.role = role;
     }
 
-    public List<UserChat> getChats() {
+    public List<ChatMember> getChats() {
         return chats;
     }
 
-    public void setChats(List<UserChat> chats) {
+    public void setChats(List<ChatMember> chats) {
         this.chats = chats;
     }
 

@@ -18,8 +18,8 @@ public class NotificationCount {
     @Column(name = "user_id")
     private int userId;
 
-    @Column(name = "count")
-    private int count;
+    @Column(name = "general_count")
+    private int generalCount;
 
     @Column(name = "chat_count")
     private int chatCount;
@@ -27,9 +27,9 @@ public class NotificationCount {
     public NotificationCount() {
     }
 
-    public NotificationCount(int userId, int count, int chatCount) {
+    public NotificationCount(int userId, int generalCount, int chatCount) {
         this.userId = userId;
-        this.count = count;
+        this.generalCount = generalCount;
         this.chatCount = chatCount;
     }
 
@@ -49,12 +49,12 @@ public class NotificationCount {
         this.userId = userId;
     }
 
-    public int getCount() {
-        return count;
+    public int getGeneralCount() {
+        return generalCount;
     }
 
-    public void setCount(int count) {
-        this.count = count;
+    public void setGeneralCount(int generalCount) {
+        this.generalCount = generalCount;
     }
 
     public int getChatCount() {

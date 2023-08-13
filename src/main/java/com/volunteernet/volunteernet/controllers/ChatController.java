@@ -18,13 +18,13 @@ public class ChatController {
     private IChatService chatService;
 
     @GetMapping("/api/users/chats")
-    public ResponseEntity<Object> getChatsByUser() {
-        List<ChatNotificationDto> chatsByUser = chatService.findChatsByUser();
+    public ResponseEntity<Object> getAllByUser() {
+        List<ChatNotificationDto> chatsByUser = chatService.findAllByUser();
         return ResponseHandlerOk.generateResponse("Chats de usuario", HttpStatus.OK, chatsByUser);
     }
     
     @PostMapping("/api/chats/{chatId}/disconnect")
-    public void disconnectUserFromChat(@PathVariable Integer chatId) {
-        chatService.disconnectUserFromChat(chatId);
+    public void disconnectUser(@PathVariable Integer chatId) {
+        chatService.disconnectUser(chatId);
     }
 }

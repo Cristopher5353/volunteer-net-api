@@ -12,19 +12,17 @@ import com.volunteernet.volunteernet.dto.user.UserResponseDto;
 import com.volunteernet.volunteernet.dto.user.UserSaveDto;
 import com.volunteernet.volunteernet.exceptions.EmailAlreadyExistsException;
 import com.volunteernet.volunteernet.exceptions.FollowerAlreadyFollowToFollowing;
-import com.volunteernet.volunteernet.exceptions.RoleNotExistsException;
-import com.volunteernet.volunteernet.exceptions.UserIsNotVolunteerGroupException;
-import com.volunteernet.volunteernet.exceptions.UserNotExistsException;
+import com.volunteernet.volunteernet.exceptions.ResourceNotFoundException;
 import com.volunteernet.volunteernet.models.Chat;
+import com.volunteernet.volunteernet.models.ChatMember;
 import com.volunteernet.volunteernet.models.Follower;
 import com.volunteernet.volunteernet.models.Role;
 import com.volunteernet.volunteernet.models.User;
-import com.volunteernet.volunteernet.models.UserChat;
 import com.volunteernet.volunteernet.repositories.IChatRepository;
 import com.volunteernet.volunteernet.repositories.IFollowerRepository;
 import com.volunteernet.volunteernet.repositories.IPublicationRepository;
 import com.volunteernet.volunteernet.repositories.IRoleRepository;
-import com.volunteernet.volunteernet.repositories.IUserChatRepository;
+import com.volunteernet.volunteernet.repositories.IChatMemberRepository;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
 import com.volunteernet.volunteernet.services.IServices.IUserService;
 import com.volunteernet.volunteernet.util.handler.memory.UserPresenceTracker;
@@ -48,7 +46,7 @@ public class UserServiceImpl implements IUserService {
     private IChatRepository chatRepository;
 
     @Autowired
-    private IUserChatRepository userChatRepository;
+    private IChatMemberRepository chatMemberRepository;
 
     @Autowired
     private UserPresenceTracker userPresenceTracker;
@@ -57,7 +55,7 @@ public class UserServiceImpl implements IUserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public void saveUser(UserSaveDto userSaveDto) {
+    public void save(UserSaveDto userSaveDto) {
         Optional<User> findUserByEmail = userRepository.findByEmail(userSaveDto.getEmail());
         Optional<Role> findRoleById = roleRepository.findById(userSaveDto.getRole());
 
@@ -66,7 +64,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         if (!findRoleById.isPresent()) {
-            throw new RoleNotExistsException();
+            throw new ResourceNotFoundException();
         }
 
         User newUser = new User();
@@ -84,19 +82,19 @@ public class UserServiceImpl implements IUserService {
 
             chatRepository.save(newChat);
 
-            UserChat newUserChat = new UserChat();
-            newUserChat.setUser(newUser);
-            newUserChat.setChat(newChat);
-            newUserChat.setRequest(false);
-            newUserChat.setState(1);
+            ChatMember newChatMember = new ChatMember();
+            newChatMember.setUser(newUser);
+            newChatMember.setChat(newChat);
+            newChatMember.setRequest(false);
+            newChatMember.setState(1);
 
-            userChatRepository.save(newUserChat);
+            chatMemberRepository.save(newChatMember);
         }
     }
 
     @Override
-    public UserResponseDto findUserById(int id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotExistsException());
+    public UserResponseDto findById(int id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
         User userAuthenticated = userRepository.findByUsername(getUserAutheticated()).get();
         int isMember = 0;
 
@@ -106,9 +104,9 @@ public class UserServiceImpl implements IUserService {
 
         if (user.getRole().getId() == 2) {
             Chat chat = chatRepository.findByUserId(user.getId());
-            UserChat userChat = userChatRepository.findByUserIdAndChatId(userAuthenticated.getId(), chat.getId());
+            ChatMember chatMember = chatMemberRepository.findByUserIdAndChatId(userAuthenticated.getId(), chat.getId());
 
-            isMember = (userChat != null) ?(userChat.getState() == 1) ?2 :1 :0;
+            isMember = (chatMember != null) ? (chatMember.getState() == 1) ? 2 : 1 : 0;
         }
 
         publicationRepository.findByUserId(id).stream()
@@ -121,8 +119,8 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public void userFollow(int id) {
-        User following = userRepository.findById(id).orElseThrow(() -> new UserNotExistsException());
+    public void follow(int id) {
+        User following = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
         User follower = userRepository.findByUsername(getUserAutheticated()).get();
 
         Follower follow = followerRepository.findByFollowingIdAndFollowerId(id,
@@ -140,8 +138,8 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public void userUnFollow(int id) {
-        User following = userRepository.findById(id).orElseThrow(() -> new UserNotExistsException());
+    public void unFollow(int id) {
+        User following = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 
         Follower follower = followerRepository.findByFollowingIdAndFollowerId(following.getId(),
                 userRepository.findByUsername(getUserAutheticated()).get().getId());
@@ -149,36 +147,13 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public void userRequestToJoinGroup(int userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotExistsException());
-
-        if(user.getRole().getId() != 2) {
-            throw new UserIsNotVolunteerGroupException();
-        }
-
-        Chat chat = chatRepository.findByUserId(userId);
-        User userAuthenticated = userRepository.findByUsername(getUserAutheticated()).get();
-        UserChat userChat = userChatRepository.findByUserIdAndChatId(userAuthenticated.getId(), chat.getId());
-
-        if(userChat == null) {
-            UserChat newUserChat = new UserChat();
-            newUserChat.setUser(userAuthenticated);
-            newUserChat.setChat(chat);
-            newUserChat.setRequest(true);
-            newUserChat.setState(0);
-
-            userChatRepository.save(newUserChat);
-        }
-    }
-
-    @Override
-    public void connectUser() {
+    public void connect() {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
         userPresenceTracker.userConnected(user);
     }
 
     @Override
-    public void disconnectUser() {
+    public void disconnect() {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
         userPresenceTracker.userDisconnected(user.getId());
     }

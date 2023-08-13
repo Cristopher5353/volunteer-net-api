@@ -10,14 +10,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-
-import com.volunteernet.volunteernet.exceptions.ChatNotExistsException;
 import com.volunteernet.volunteernet.exceptions.ChatNotExistsInUserChatsException;
 import com.volunteernet.volunteernet.exceptions.EmailAlreadyExistsException;
 import com.volunteernet.volunteernet.exceptions.FollowerAlreadyFollowToFollowing;
-import com.volunteernet.volunteernet.exceptions.RoleNotExistsException;
+import com.volunteernet.volunteernet.exceptions.ResourceNotFoundException;
+import com.volunteernet.volunteernet.exceptions.UserIsNotChatAdministrator;
 import com.volunteernet.volunteernet.exceptions.UserIsNotVolunteerGroupException;
-import com.volunteernet.volunteernet.exceptions.UserNotExistsException;
 
 @ControllerAdvice
 public class ResponseHandlerError {
@@ -35,18 +33,6 @@ public class ResponseHandlerError {
         errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
         errorResponse.setMessage(null);
         errorResponse.setErrors(errors);
-
-        return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(RoleNotExistsException.class)
-    protected ResponseEntity<Object> handleRoleNotExistsException(RoleNotExistsException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse();
-
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-        errorResponse.setMessage(null);
-        errorResponse.setErrors(Arrays.asList(ex.getMessage()));
 
         return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -77,18 +63,6 @@ public class ResponseHandlerError {
         return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(UserNotExistsException.class)
-    protected ResponseEntity<Object> handleUserNotExistsException(UserNotExistsException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse();
-
-        errorResponse.setStatus(HttpStatus.NOT_FOUND.value());
-        errorResponse.setMessage(ex.getMessage());
-        errorResponse.setErrors(null);
-
-        return new ResponseEntity<Object>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(FollowerAlreadyFollowToFollowing.class)
     protected ResponseEntity<Object> handleFollowerAlreadyFollowToFollowing(FollowerAlreadyFollowToFollowing ex,
             WebRequest request) {
@@ -102,8 +76,8 @@ public class ResponseHandlerError {
         return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ChatNotExistsException.class)
-    protected ResponseEntity<Object> handleChatNotExistsException(ChatNotExistsException ex,
+    @ExceptionHandler(ResourceNotFoundException.class)
+    protected ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex,
             WebRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse();
@@ -117,6 +91,19 @@ public class ResponseHandlerError {
 
     @ExceptionHandler(UserIsNotVolunteerGroupException.class)
     protected ResponseEntity<Object> handleUserIsNotVolunteerGroupException(UserIsNotVolunteerGroupException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse();
+
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setMessage(ex.getMessage());
+        errorResponse.setErrors(null);
+
+        return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserIsNotChatAdministrator.class)
+    protected ResponseEntity<Object> handleUserIsNotGroupAdministrator(UserIsNotChatAdministrator ex,
             WebRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse();
