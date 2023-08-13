@@ -43,7 +43,7 @@ public class ChatMemberServiceImpl implements IChatMemberService {
         List<ChatMember> requestsByChat = chatMemberRepository.findRequestsByChatId(chat.getId());
 
         return requestsByChat.stream()
-                .map(chatMember -> new ChatMemberResponseDto(chatMember.getId(), chatMember.getUser().getUsername()))
+                .map(chatMember -> new ChatMemberResponseDto(chatMember.getId(), chatMember.getUser().getId(), chatMember.getUser().getUsername()))
                 .collect(Collectors.toList());
     }
 
