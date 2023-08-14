@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +14,15 @@ import com.volunteernet.volunteernet.exceptions.UserIsNotChatAdministrator;
 import com.volunteernet.volunteernet.exceptions.UserIsNotVolunteerGroupException;
 import com.volunteernet.volunteernet.models.Chat;
 import com.volunteernet.volunteernet.models.ChatMember;
+import com.volunteernet.volunteernet.models.Notification;
 import com.volunteernet.volunteernet.models.User;
 import com.volunteernet.volunteernet.repositories.IChatRepository;
+import com.volunteernet.volunteernet.repositories.INotificationRepository;
 import com.volunteernet.volunteernet.repositories.IChatMemberRepository;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
 import com.volunteernet.volunteernet.services.IServices.IChatMemberService;
+import com.volunteernet.volunteernet.services.IServices.INotificationCountService;
+import com.volunteernet.volunteernet.util.handler.memory.UserPresenceTracker;
 
 @Service
 public class ChatMemberServiceImpl implements IChatMemberService {
@@ -31,6 +36,18 @@ public class ChatMemberServiceImpl implements IChatMemberService {
     @Autowired
     private IChatMemberRepository chatMemberRepository;
 
+    @Autowired
+    private INotificationRepository notificationRepository;
+
+    @Autowired
+    private INotificationCountService notificationCountService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private UserPresenceTracker userPresenceTracker;
+
     @Override
     public List<ChatMemberResponseDto> getAllRequestsByUser() {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
@@ -43,8 +60,14 @@ public class ChatMemberServiceImpl implements IChatMemberService {
         List<ChatMember> requestsByChat = chatMemberRepository.findRequestsByChatId(chat.getId());
 
         return requestsByChat.stream()
-                .map(chatMember -> new ChatMemberResponseDto(chatMember.getId(), chatMember.getUser().getId(), chatMember.getUser().getUsername()))
+                .map(chatMember -> new ChatMemberResponseDto(chatMember.getId(), chatMember.getUser().getId(),
+                        chatMember.getUser().getUsername()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public int getRequestsCountByUser() {
+        return getAllRequestsByUser().size();
     }
 
     @Override
@@ -67,6 +90,11 @@ public class ChatMemberServiceImpl implements IChatMemberService {
             newChatMember.setState(0);
 
             chatMemberRepository.save(newChatMember);
+
+            if (userPresenceTracker.isUserOnline(user.getId())) {
+                messagingTemplate.convertAndSendToUser(String.valueOf(user.getId()),
+                        "/queue/notifications/requests/join", "group");
+            }
         }
     }
 
@@ -83,6 +111,26 @@ public class ChatMemberServiceImpl implements IChatMemberService {
 
         chatMember.setState(1);
         chatMemberRepository.save(chatMember);
+
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(userRepository.findByUsername(getUserAutheticated()).get().getId()),
+                "/queue/notifications/requests/confirm", "group");
+
+        Notification newNotification = new Notification();
+        newNotification.setFollower(chatMember.getUser());
+        newNotification.setFollowing(userRepository.findByUsername(getUserAutheticated()).get());
+        newNotification.setMessage("Te damos la bienvenida a " + chatMember.getChat().getUser().getUsername()
+                + ". El administrador aprobó tu solicitud");
+        newNotification.setType("request");
+
+        notificationRepository.save(newNotification);
+
+        notificationCountService.incrementGeneralCount(chatMember.getUser().getId());
+
+        if (userPresenceTracker.isUserOnline(chatMember.getUser().getId())) {
+            messagingTemplate.convertAndSendToUser(String.valueOf(chatMember.getUser().getId()),
+                    "/queue/notifications/requests/confirm", "user");
+        }
     }
 
     private String getUserAutheticated() {

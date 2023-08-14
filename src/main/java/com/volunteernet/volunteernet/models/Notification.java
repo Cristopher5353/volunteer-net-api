@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "notifications")
-public class Notification { 
+public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -25,9 +25,14 @@ public class Notification {
     @JoinColumn(name = "following_id")
     private User following;
 
-    @ManyToOne
-    @JoinColumn(name = "publication_id")
-    private Publication publication;
+    @Column(name = "source_id")
+    private Integer sourceId;
+
+    @Column(name = "message")
+    private String message;
+
+    @Column(name = "type")
+    private String type;
 
     public int getId() {
         return id;
@@ -53,11 +58,29 @@ public class Notification {
         this.following = following;
     }
 
-    public Publication getPublication() {
-        return publication;
+    public Integer getSourceId() {
+        return sourceId;
     }
 
-    public void setPublication(Publication publication) {
-        this.publication = publication;
+    public void setSourceId(Integer sourceId) {
+        this.sourceId = sourceId;
     }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+    
+    
 }

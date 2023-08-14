@@ -78,14 +78,16 @@ public class PublicationServiceImpl implements IPublicationService {
                         "/queue/notifications", "ok");
             }
 
-            notificationCountService.incrementGeneralCount(follower.getFollower().getId());
-
             Notification newNotification = new Notification();
             newNotification.setFollower(userRepository.findById(follower.getFollower().getId()).get());
             newNotification.setFollowing(userRepository.findByUsername(getUserAutheticated()).get());
-            newNotification.setPublication(newPublication);
+            newNotification.setSourceId(newPublication.getId());
+            newNotification.setMessage(user.getUsername() + "agregó una publicación");
+            newNotification.setType("publication");
 
             notificationRepository.save(newNotification);
+
+            notificationCountService.incrementGeneralCount(follower.getFollower().getId());
         });
     }
 
