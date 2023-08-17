@@ -3,6 +3,7 @@ package com.volunteernet.volunteernet.services.ServiceImpl;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,7 +12,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.volunteernet.volunteernet.dto.image.ImageResponseDto;
 import com.volunteernet.volunteernet.dto.publication.PublicationResponseDto;
 import com.volunteernet.volunteernet.dto.publication.PublicationSaveDto;
@@ -62,11 +62,13 @@ public class PublicationServiceImpl implements IPublicationService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public void save(PublicationSaveDto publicationSaveDto, MultipartFile[] images) throws IOException {
-        if(images != null) {
+    public PublicationResponseDto save(PublicationSaveDto publicationSaveDto, MultipartFile[] images)
+            throws IOException {
+        if (images != null) {
             validateImagesFormat(images);
         }
 
+        List<Image> publicationImages = new ArrayList<>();
         Publication newPublication = new Publication();
         newPublication.setDescription(publicationSaveDto.getDescription());
         newPublication.setUser(userRepository.findByUsername(getUserAutheticated()).get());
@@ -74,19 +76,26 @@ public class PublicationServiceImpl implements IPublicationService {
 
         publicationRepository.save(newPublication);
 
-        if(images != null) {
+        if (images != null) {
             for (MultipartFile image : images) {
                 Map<?, ?> result = cloudinaryService.upload(image);
                 Image newImage = new Image();
                 newImage.setUrl((String) result.get("url"));
                 newImage.setKey((String) result.get("public_id"));
                 newImage.setPublication(newPublication);
-    
+
                 imageRepository.save(newImage);
+                publicationImages.add(newImage);
             }
         }
 
+        newPublication.setImages(publicationImages);
         notifyUserFollowers(newPublication);
+
+        return new PublicationResponseDto(newPublication.getId(), newPublication.getDescription(),
+                newPublication.getUser().getUsername(), newPublication.getUser().getId(), newPublication.getCreatedAt(),
+                newPublication.getImages().stream().map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
+                        .collect(Collectors.toList()));
     }
 
     @Override
@@ -96,8 +105,10 @@ public class PublicationServiceImpl implements IPublicationService {
         return publicationRepository.findByUserIdNotEqual(user.getId())
                 .stream()
                 .map(publication -> new PublicationResponseDto(publication.getId(), publication.getDescription(),
-                        publication.getUser().getUsername(), publication.getUser().getId(), publication.getCreatedAt(), 
-                        publication.getImages().stream().map(image -> new ImageResponseDto(image.getId(), image.getUrl())).collect(Collectors.toList())))
+                        publication.getUser().getUsername(), publication.getUser().getId(), publication.getCreatedAt(),
+                        publication.getImages().stream()
+                                .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
+                                .collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
@@ -136,9 +147,9 @@ public class PublicationServiceImpl implements IPublicationService {
 
     private void validateImagesFormat(MultipartFile[] images) {
         for (MultipartFile image : images) {
-           if(!image.getContentType().startsWith("image/")) {
+            if (!image.getContentType().startsWith("image/")) {
                 throw new NotImageException(image.getOriginalFilename());
-           }
+            }
         }
     }
 }

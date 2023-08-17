@@ -7,7 +7,7 @@ import com.volunteernet.volunteernet.dto.publication.PublicationResponseDto;
 import com.volunteernet.volunteernet.dto.publication.PublicationSaveDto;
 
 public interface IPublicationService {
-    void save(PublicationSaveDto publicationSaveDto, MultipartFile[] images) throws IOException;
+    PublicationResponseDto save(PublicationSaveDto publicationSaveDto, MultipartFile[] images) throws IOException;
 
     List<PublicationResponseDto> findAll();
 }

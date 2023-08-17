@@ -29,8 +29,8 @@ public class PublicationController {
     }
 
     @PostMapping("/api/publications")
-    public ResponseEntity<Object> savePublication(@Valid @RequestPart PublicationSaveDto publicationSaveDto, @RequestPart(required = false) MultipartFile[] images) throws IOException {
-        publicationService.save(publicationSaveDto, images);
-        return ResponseHandlerOk.generateResponse("Publicación registrada correctamente", HttpStatus.CREATED, null);
+    public ResponseEntity<Object> save(@Valid @RequestPart PublicationSaveDto publicationSaveDto, @RequestPart(required = false) MultipartFile[] images) throws IOException {
+        PublicationResponseDto newPublication = publicationService.save(publicationSaveDto, images);
+        return ResponseHandlerOk.generateResponse("Publicación registrada correctamente", HttpStatus.CREATED, newPublication);
     }
 }
