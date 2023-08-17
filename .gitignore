@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Credentials ###
+/src/main/java/com/volunteernet/volunteernet/util/handler/cloudinary/Credential.java

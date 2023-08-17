@@ -83,12 +83,14 @@ public class MessageServiceImpl implements IMessageService {
         messageResponseWebsocketDto.setMessageResponseDto(messageResponseDto);
         messageResponseWebsocketDto.setChatId(chat.getId());
 
-        List<ChatMember> chatMembers = chat.getUsers().stream().filter(chatMember -> chatMember.getUser().getId() != user.getId())
+        List<ChatMember> chatMembers = chat.getUsers().stream()
+                .filter(chatMember -> chatMember.getUser().getId() != user.getId())
                 .collect(Collectors.toList());
 
-        for (ChatMember chatMember : chatMembers) {
+        chatMembers.stream().forEach(chatMember -> {
             if (!chatUserPresenceTracker.isUserConnectedToChat(chat.getId(), chatMember.getUser())) {
-                ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(chatMember.getUser().getId(),
+                ChatNotification chatNotification = chatNotificationRepository.findByUserIdAndChatId(
+                        chatMember.getUser().getId(),
                         chat.getId());
 
                 if (chatNotification == null) {
@@ -113,7 +115,7 @@ public class MessageServiceImpl implements IMessageService {
             } else {
                 notificationCountService.incrementChatCountByUser(chatMember.getUser().getId());
             }
-        }
+        });
 
         messageResponseDto.setMyMessage(true);
         return messageResponseDto;
@@ -126,7 +128,8 @@ public class MessageServiceImpl implements IMessageService {
     private void verifyExistsChatInUserChats(Integer chatId) {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
 
-        boolean existsChatInUserChats = user.getChats().stream().filter(chatMember -> chatMember.getState() == 1).anyMatch(chatMember -> chatMember.getChat().getId() == chatId);
+        boolean existsChatInUserChats = user.getChats().stream().filter(chatMember -> chatMember.getState() == 1)
+                .anyMatch(chatMember -> chatMember.getChat().getId() == chatId);
 
         if (!existsChatInUserChats) {
             throw new ChatNotExistsInUserChatsException();

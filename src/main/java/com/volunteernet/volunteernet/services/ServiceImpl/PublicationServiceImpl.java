@@ -1,25 +1,34 @@
 package com.volunteernet.volunteernet.services.ServiceImpl;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.volunteernet.volunteernet.dto.image.ImageResponseDto;
 import com.volunteernet.volunteernet.dto.publication.PublicationResponseDto;
 import com.volunteernet.volunteernet.dto.publication.PublicationSaveDto;
+import com.volunteernet.volunteernet.exceptions.NotImageException;
 import com.volunteernet.volunteernet.models.Follower;
+import com.volunteernet.volunteernet.models.Image;
 import com.volunteernet.volunteernet.models.Notification;
 import com.volunteernet.volunteernet.models.Publication;
 import com.volunteernet.volunteernet.models.User;
 import com.volunteernet.volunteernet.repositories.IFollowerRepository;
+import com.volunteernet.volunteernet.repositories.IImageRepository;
 import com.volunteernet.volunteernet.repositories.INotificationRepository;
 import com.volunteernet.volunteernet.repositories.IPublicationRepository;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
 import com.volunteernet.volunteernet.services.IServices.INotificationCountService;
 import com.volunteernet.volunteernet.services.IServices.IPublicationService;
+import com.volunteernet.volunteernet.util.handler.cloudinary.CloudinaryService;
 import com.volunteernet.volunteernet.util.handler.memory.UserPresenceTracker;
 
 @Service
@@ -38,6 +47,12 @@ public class PublicationServiceImpl implements IPublicationService {
     private INotificationRepository notificationRepository;
 
     @Autowired
+    private IImageRepository imageRepository;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
+    @Autowired
     private UserPresenceTracker userPresenceTracker;
 
     @Autowired
@@ -47,13 +62,30 @@ public class PublicationServiceImpl implements IPublicationService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public void save(PublicationSaveDto publicationSaveDto) {
+    public void save(PublicationSaveDto publicationSaveDto, MultipartFile[] images) throws IOException {
+        if(images != null) {
+            validateImagesFormat(images);
+        }
+
         Publication newPublication = new Publication();
         newPublication.setDescription(publicationSaveDto.getDescription());
         newPublication.setUser(userRepository.findByUsername(getUserAutheticated()).get());
         newPublication.setCreatedAt(getCurrentDateTime());
 
         publicationRepository.save(newPublication);
+
+        if(images != null) {
+            for (MultipartFile image : images) {
+                Map<?, ?> result = cloudinaryService.upload(image);
+                Image newImage = new Image();
+                newImage.setUrl((String) result.get("url"));
+                newImage.setKey((String) result.get("public_id"));
+                newImage.setPublication(newPublication);
+    
+                imageRepository.save(newImage);
+            }
+        }
+
         notifyUserFollowers(newPublication);
     }
 
@@ -64,7 +96,8 @@ public class PublicationServiceImpl implements IPublicationService {
         return publicationRepository.findByUserIdNotEqual(user.getId())
                 .stream()
                 .map(publication -> new PublicationResponseDto(publication.getId(), publication.getDescription(),
-                        publication.getUser().getUsername(), publication.getUser().getId(), publication.getCreatedAt()))
+                        publication.getUser().getUsername(), publication.getUser().getId(), publication.getCreatedAt(), 
+                        publication.getImages().stream().map(image -> new ImageResponseDto(image.getId(), image.getUrl())).collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
@@ -101,4 +134,11 @@ public class PublicationServiceImpl implements IPublicationService {
         return now.format(formatter);
     }
 
+    private void validateImagesFormat(MultipartFile[] images) {
+        for (MultipartFile image : images) {
+           if(!image.getContentType().startsWith("image/")) {
+                throw new NotImageException(image.getOriginalFilename());
+           }
+        }
+    }
 }

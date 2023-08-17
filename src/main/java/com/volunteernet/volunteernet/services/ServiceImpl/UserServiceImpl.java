@@ -3,10 +3,14 @@ package com.volunteernet.volunteernet.services.ServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.volunteernet.volunteernet.dto.image.ImageResponseDto;
 import com.volunteernet.volunteernet.dto.publication.PublicationResponseDto;
 import com.volunteernet.volunteernet.dto.user.UserResponseDto;
 import com.volunteernet.volunteernet.dto.user.UserSaveDto;
@@ -111,7 +115,10 @@ public class UserServiceImpl implements IUserService {
 
         publicationRepository.findByUserId(id).stream()
                 .forEach(publication -> publicationsDto.add(new PublicationResponseDto(publication.getId(),
-                        publication.getDescription(), user.getUsername(), user.getId(), publication.getCreatedAt())));
+                        publication.getDescription(), user.getUsername(), user.getId(), publication.getCreatedAt(),
+                        publication.getImages().stream()
+                                .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
+                                .collect(Collectors.toList()))));
 
         return new UserResponseDto(user.getId(), user.getUsername(), user.getEmail(), user.getDescription(),
                 user.getWebsite(), user.getRole().getName(), follower == null ? false : true, isMember,

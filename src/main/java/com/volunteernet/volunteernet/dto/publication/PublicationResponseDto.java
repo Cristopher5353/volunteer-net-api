@@ -1,21 +1,27 @@
 package com.volunteernet.volunteernet.dto.publication;
 
+import java.util.List;
+import com.volunteernet.volunteernet.dto.image.ImageResponseDto;
+
 public class PublicationResponseDto {
     private int id;
     private String description;
     private String user;
     private int userId;
     private String createdAt;
+    private List<ImageResponseDto> images;
 
     public PublicationResponseDto() {
     }
 
-    public PublicationResponseDto(int id, String description, String user, int userId, String createdAt) {
+    public PublicationResponseDto(int id, String description, String user, int userId, String createdAt,
+            List<ImageResponseDto> images) {
         this.id = id;
         this.description = description;
         this.user = user;
         this.userId = userId;
         this.createdAt = createdAt;
+        this.images = images;
     }
 
     public int getId() {
@@ -58,4 +64,11 @@ public class PublicationResponseDto {
         this.createdAt = createdAt;
     }
 
+    public List<ImageResponseDto> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ImageResponseDto> images) {
+        this.images = images;
+    }
 }

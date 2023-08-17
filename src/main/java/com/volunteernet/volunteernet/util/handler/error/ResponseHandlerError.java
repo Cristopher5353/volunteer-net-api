@@ -13,6 +13,7 @@ import org.springframework.web.context.request.WebRequest;
 import com.volunteernet.volunteernet.exceptions.ChatNotExistsInUserChatsException;
 import com.volunteernet.volunteernet.exceptions.EmailAlreadyExistsException;
 import com.volunteernet.volunteernet.exceptions.FollowerAlreadyFollowToFollowing;
+import com.volunteernet.volunteernet.exceptions.NotImageException;
 import com.volunteernet.volunteernet.exceptions.ResourceNotFoundException;
 import com.volunteernet.volunteernet.exceptions.UserIsNotChatAdministrator;
 import com.volunteernet.volunteernet.exceptions.UserIsNotVolunteerGroupException;
@@ -111,6 +112,19 @@ public class ResponseHandlerError {
         errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
         errorResponse.setMessage(ex.getMessage());
         errorResponse.setErrors(null);
+
+        return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotImageException.class)
+    protected ResponseEntity<Object> handleNotImageException(NotImageException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse();
+
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setMessage(null);
+        errorResponse.setErrors(Arrays.asList(ex.getMessage()));
 
         return new ResponseEntity<Object>(errorResponse, HttpStatus.BAD_REQUEST);
     }
