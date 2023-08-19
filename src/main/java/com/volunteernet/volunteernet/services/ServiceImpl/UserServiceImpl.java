@@ -1,17 +1,10 @@
 package com.volunteernet.volunteernet.services.ServiceImpl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.volunteernet.volunteernet.dto.image.ImageResponseDto;
-import com.volunteernet.volunteernet.dto.publication.PublicationResponseDto;
 import com.volunteernet.volunteernet.dto.user.UserResponseDto;
 import com.volunteernet.volunteernet.dto.user.UserSaveDto;
 import com.volunteernet.volunteernet.exceptions.EmailAlreadyExistsException;
@@ -24,7 +17,6 @@ import com.volunteernet.volunteernet.models.Role;
 import com.volunteernet.volunteernet.models.User;
 import com.volunteernet.volunteernet.repositories.IChatRepository;
 import com.volunteernet.volunteernet.repositories.IFollowerRepository;
-import com.volunteernet.volunteernet.repositories.IPublicationRepository;
 import com.volunteernet.volunteernet.repositories.IRoleRepository;
 import com.volunteernet.volunteernet.repositories.IChatMemberRepository;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
@@ -42,9 +34,6 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private IFollowerRepository followerRepository;
-
-    @Autowired
-    private IPublicationRepository publicationRepository;
 
     @Autowired
     private IChatRepository chatRepository;
@@ -102,7 +91,6 @@ public class UserServiceImpl implements IUserService {
         User userAuthenticated = userRepository.findByUsername(getUserAutheticated()).get();
         int isMember = 0;
 
-        List<PublicationResponseDto> publicationsDto = new ArrayList<>();
         Follower follower = followerRepository.findByFollowingIdAndFollowerId(id,
                 userRepository.findByUsername(getUserAutheticated()).get().getId());
 
@@ -113,16 +101,8 @@ public class UserServiceImpl implements IUserService {
             isMember = (chatMember != null) ? (chatMember.getState() == 1) ? 2 : 1 : 0;
         }
 
-        publicationRepository.findByUserId(id).stream()
-                .forEach(publication -> publicationsDto.add(new PublicationResponseDto(publication.getId(),
-                        publication.getDescription(), user.getUsername(), user.getId(), publication.getCreatedAt(),
-                        publication.getImages().stream()
-                                .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
-                                .collect(Collectors.toList()))));
-
         return new UserResponseDto(user.getId(), user.getUsername(), user.getEmail(), user.getDescription(),
-                user.getWebsite(), user.getRole().getName(), follower == null ? false : true, isMember,
-                publicationsDto);
+                user.getWebsite(), user.getRole().getName(), follower == null ? false : true, isMember);
     }
 
     @Override

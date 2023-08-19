@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import com.volunteernet.volunteernet.dto.image.ImageResponseDto;
 import com.volunteernet.volunteernet.dto.publication.PublicationResponseDto;
 import com.volunteernet.volunteernet.dto.publication.PublicationSaveDto;
 import com.volunteernet.volunteernet.exceptions.NotImageException;
+import com.volunteernet.volunteernet.exceptions.ResourceNotFoundException;
 import com.volunteernet.volunteernet.models.Follower;
 import com.volunteernet.volunteernet.models.Image;
 import com.volunteernet.volunteernet.models.Notification;
@@ -62,6 +64,33 @@ public class PublicationServiceImpl implements IPublicationService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Override
+    public List<PublicationResponseDto> findAll(Pageable pageable) {
+        User user = userRepository.findByUsername(getUserAutheticated()).get();
+
+        return publicationRepository.findAllByUserIdNotEqual(user.getId(), pageable)
+                .getContent()
+                .stream()
+                .map(publication -> new PublicationResponseDto(publication.getId(), publication.getDescription(),
+                        publication.getUser().getUsername(), publication.getUser().getId(), publication.getCreatedAt(),
+                        publication.getImages().stream()
+                                .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
+                                .collect(Collectors.toList())))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PublicationResponseDto> findAllByUserId(int userId, Pageable pageable) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException());
+
+        return publicationRepository.findAllByUserId(user.getId(), pageable).stream()
+                .map(publication -> new PublicationResponseDto(publication.getId(),
+                        publication.getDescription(), user.getUsername(), user.getId(), publication.getCreatedAt(),
+                        publication.getImages().stream()
+                                .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
+                                .collect(Collectors.toList()))).collect(Collectors.toList());
+    }
+
+    @Override
     public PublicationResponseDto save(PublicationSaveDto publicationSaveDto, MultipartFile[] images)
             throws IOException {
         if (images != null) {
@@ -98,23 +127,9 @@ public class PublicationServiceImpl implements IPublicationService {
                         .collect(Collectors.toList()));
     }
 
-    @Override
-    public List<PublicationResponseDto> findAll() {
-        User user = userRepository.findByUsername(getUserAutheticated()).get();
-
-        return publicationRepository.findByUserIdNotEqual(user.getId())
-                .stream()
-                .map(publication -> new PublicationResponseDto(publication.getId(), publication.getDescription(),
-                        publication.getUser().getUsername(), publication.getUser().getId(), publication.getCreatedAt(),
-                        publication.getImages().stream()
-                                .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
-                                .collect(Collectors.toList())))
-                .collect(Collectors.toList());
-    }
-
     private void notifyUserFollowers(Publication newPublication) {
         User user = userRepository.findByUsername(getUserAutheticated()).get();
-        List<Follower> followers = followerRepository.findByFollowingId(user.getId());
+        List<Follower> followers = followerRepository.findAllByFollowingId(user.getId());
 
         followers.stream().forEach(follower -> {
             if (userPresenceTracker.isUserOnline(follower.getFollower().getId())) {

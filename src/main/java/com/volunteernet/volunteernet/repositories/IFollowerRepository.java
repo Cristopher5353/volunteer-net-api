@@ -10,5 +10,5 @@ public interface IFollowerRepository extends JpaRepository<Follower, Integer> {
     Follower findByFollowingIdAndFollowerId(int followingId, int followerId);
 
     @Query("SELECT f FROM Follower f WHERE f.following.id = :followingId")
-    List<Follower> findByFollowingId(int followingId);
+    List<Follower> findAllByFollowingId(int followingId);
 }
