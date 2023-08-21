@@ -141,7 +141,7 @@ public class PublicationServiceImpl implements IPublicationService {
             newNotification.setFollower(userRepository.findById(follower.getFollower().getId()).get());
             newNotification.setFollowing(userRepository.findByUsername(getUserAutheticated()).get());
             newNotification.setSourceId(newPublication.getId());
-            newNotification.setMessage(user.getUsername() + "agregó una publicación");
+            newNotification.setMessage(user.getUsername() + " agregó una publicación");
             newNotification.setType("publication");
 
             notificationRepository.save(newNotification);

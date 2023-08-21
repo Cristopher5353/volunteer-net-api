@@ -50,6 +50,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ChatNotification> chatNotifications;
 
+    @OneToMany(mappedBy = "follower")
+    private List<Notification> notifications;
+
     public int getId() {
         return id;
     }
@@ -136,6 +139,14 @@ public class User {
 
     public void setChatNotifications(List<ChatNotification> chatNotifications) {
         this.chatNotifications = chatNotifications;
+    }
+
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(List<Notification> notifications) {
+        this.notifications = notifications;
     }
 
 }
