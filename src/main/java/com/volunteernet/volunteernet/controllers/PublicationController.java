@@ -31,6 +31,12 @@ public class PublicationController {
         return ResponseHandlerOk.generateResponse("Publicaciones", HttpStatus.OK, publications);
     }
 
+    @GetMapping("/api/publications/{id}")
+    public ResponseEntity<Object> getById(@PathVariable Integer id) {
+        PublicationResponseDto publication = publicationService.findById(id);
+        return ResponseHandlerOk.generateResponse("Publicación", HttpStatus.OK, publication);
+    }
+
     @GetMapping("/api/users/{userId}/publications")
     public ResponseEntity<Object> getAllByUser(@PathVariable Integer userId,
             @PageableDefault(page = 0, size = 5) Pageable pageable) {

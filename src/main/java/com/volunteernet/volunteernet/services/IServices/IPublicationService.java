@@ -10,6 +10,8 @@ import com.volunteernet.volunteernet.dto.publication.PublicationSaveDto;
 public interface IPublicationService {
     List<PublicationResponseDto> findAll(Pageable pageable);
 
+    PublicationResponseDto findById(int id);
+
     List<PublicationResponseDto> findAllByUserId(int userId, Pageable pageable);
 
     PublicationResponseDto save(PublicationSaveDto publicationSaveDto, MultipartFile[] images) throws IOException;

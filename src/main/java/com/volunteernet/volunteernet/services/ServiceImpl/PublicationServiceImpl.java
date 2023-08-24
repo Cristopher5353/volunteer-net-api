@@ -79,6 +79,17 @@ public class PublicationServiceImpl implements IPublicationService {
     }
 
     @Override
+    public PublicationResponseDto findById(int id) {
+        Publication publication = publicationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+
+        return new PublicationResponseDto(publication.getId(), publication.getDescription(),
+                publication.getUser().getUsername(), publication.getUser().getId(), publication.getCreatedAt(),
+                publication.getImages().stream()
+                        .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
+                        .collect(Collectors.toList()));
+    }
+
+    @Override
     public List<PublicationResponseDto> findAllByUserId(int userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException());
 
@@ -87,7 +98,8 @@ public class PublicationServiceImpl implements IPublicationService {
                         publication.getDescription(), user.getUsername(), user.getId(), publication.getCreatedAt(),
                         publication.getImages().stream()
                                 .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
-                                .collect(Collectors.toList()))).collect(Collectors.toList());
+                                .collect(Collectors.toList())))
+                .collect(Collectors.toList());
     }
 
     @Override

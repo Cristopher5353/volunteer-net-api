@@ -1,13 +1,13 @@
 package com.volunteernet.volunteernet.services.ServiceImpl;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import com.volunteernet.volunteernet.dto.chatMember.ChatMemberResponseDto;
 import com.volunteernet.volunteernet.exceptions.ResourceNotFoundException;
 import com.volunteernet.volunteernet.exceptions.UserIsNotChatAdministrator;
@@ -122,6 +122,7 @@ public class ChatMemberServiceImpl implements IChatMemberService {
         newNotification.setMessage("Te damos la bienvenida a " + chatMember.getChat().getUser().getUsername()
                 + ". El administrador aprobó tu solicitud");
         newNotification.setType("request");
+        newNotification.setCreatedAt(getCurrentDateTime());
 
         notificationRepository.save(newNotification);
 
@@ -135,5 +136,11 @@ public class ChatMemberServiceImpl implements IChatMemberService {
 
     private String getUserAutheticated() {
         return SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    }
+
+    private String getCurrentDateTime() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return now.format(formatter);
     }
 }
