@@ -5,12 +5,14 @@ public class NotificationResponseDto {
     private Integer source;
     private String message;
     private String type;
+    private String createdAt;
 
-    public NotificationResponseDto(int id, Integer source, String message, String type) {
+    public NotificationResponseDto(int id, Integer source, String message, String type, String createdAt) {
         this.id = id;
         this.source = source;
         this.message = message;
         this.type = type;
+        this.createdAt = createdAt;
     }
 
     public int getId() {
@@ -44,4 +46,13 @@ public class NotificationResponseDto {
     public void setType(String type) {
         this.type = type;
     }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
 }

@@ -34,6 +34,9 @@ public class Notification {
     @Column(name = "type")
     private String type;
 
+    @Column(name = "created_at")
+    private String createdAt;
+
     public int getId() {
         return id;
     }
@@ -81,6 +84,13 @@ public class Notification {
     public void setType(String type) {
         this.type = type;
     }
-    
-    
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
 }

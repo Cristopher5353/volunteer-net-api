@@ -143,6 +143,7 @@ public class PublicationServiceImpl implements IPublicationService {
             newNotification.setSourceId(newPublication.getId());
             newNotification.setMessage(user.getUsername() + " agregó una publicación");
             newNotification.setType("publication");
+            newNotification.setCreatedAt(getCurrentDateTime());
 
             notificationRepository.save(newNotification);
 

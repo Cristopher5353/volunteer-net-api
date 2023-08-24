@@ -1,11 +1,13 @@
 package com.volunteernet.volunteernet.services.ServiceImpl;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.volunteernet.volunteernet.dto.notification.NotificationResponseDto;
+import com.volunteernet.volunteernet.models.Notification;
 import com.volunteernet.volunteernet.models.User;
 import com.volunteernet.volunteernet.repositories.IUserRepository;
 import com.volunteernet.volunteernet.services.IServices.INotificationService;
@@ -22,8 +24,9 @@ public class NotificationServiceImpl implements INotificationService {
 
         return user.getNotifications()
                 .stream()
+                .sorted(Comparator.comparing(Notification::getCreatedAt).reversed())
                 .map(notification -> new NotificationResponseDto(notification.getId(), notification.getSourceId(),
-                        notification.getMessage(), notification.getType()))
+                        notification.getMessage(), notification.getType(), notification.getCreatedAt()))
                 .collect(Collectors.toList());
     }
 
